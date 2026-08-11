@@ -1,17 +1,62 @@
 name: CI
 
+# The repository's default branch is `master`. CLAUDE.md section 4 talks about
+# `main`; if the branch is ever renamed, update both places together.
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
-  build-and-test:
+  packages:
+    name: Swift packages
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
 
+      # Platform-independent packages run straight through SwiftPM — much
+      # faster than booting a simulator, and it keeps `Core` honest about not
+      # depending on UIKit.
+      - name: Test platform-independent packages
+        run: |
+          set -e
+          for package in Core Persistence RemoteContent Notifications Purchases Analytics LiveSession Sync; do
+            echo "::group::$package"
+            (cd "Packages/$package" && swift test)
+            echo "::endgroup::"
+          done
+
+  ios-packages:
+    name: iOS-only packages
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      # DesignSystem and Features build against the iOS SDK, so SwiftPM alone
+      # can't test them — they go through xcodebuild against a simulator.
+      - name: Test iOS-only packages
+        run: |
+          set -eo pipefail
+          for package in DesignSystem Features; do
+            echo "::group::$package"
+            # Run from inside the package: xcodebuild picks up Package.swift
+            # and generates the scheme itself.
+            (cd "Packages/$package" && xcodebuild test \
+              -scheme "$package" \
+              -destination "platform=iOS Simulator,name=iPhone 16")
+            echo "::endgroup::"
+          done
+
+  app:
+    name: App build and tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.app
 
@@ -21,32 +66,32 @@ jobs:
       - name: Generate project
         run: xcodegen generate
 
+      # Covers the iOS-only packages (DesignSystem, Features) too, since they
+      # can only be compiled against the iOS SDK.
       - name: Build
         run: |
+          set -o pipefail
           xcodebuild build \
             -project PelvicApp.xcodeproj \
             -scheme PelvicApp \
-            -destination "generic/platform=iOS Simulator" \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            -destination "generic/platform=iOS Simulator"
 
       - name: Test
         run: |
+          set -o pipefail
           xcodebuild test \
             -project PelvicApp.xcodeproj \
             -scheme PelvicApp \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
-            | xcpretty && exit ${PIPESTATUS[0]}
+            -destination "platform=iOS Simulator,name=iPhone 16"
 
   format-lint:
+    name: Format and lint
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-
       - name: Install SwiftFormat and SwiftLint
         run: brew install swiftformat swiftlint
-
       - name: SwiftFormat check
         run: swiftformat --lint .
-
       - name: SwiftLint
         run: swiftlint --strict

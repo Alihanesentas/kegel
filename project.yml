@@ -4,6 +4,7 @@ options:
   minimumXcodeGenVersion: 2.38.0
   createIntermediateGroups: true
   bundleIdPrefix: com.kegel
+  generateEmptyDirectories: true
 
 settings:
   base:
@@ -34,6 +35,8 @@ packages:
     path: Packages/Sync
   DesignSystem:
     path: Packages/DesignSystem
+  Features:
+    path: Packages/Features
 
 targets:
   PelvicApp:
@@ -42,16 +45,14 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: App
-    resources:
-      - path: App/Resources
+        excludes:
+          - Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kegel.app
-        SWIFT_STRICT_CONCURRENCY: complete
-        ENABLE_PREVIEWS: true
         TARGETED_DEVICE_FAMILY: "1"
-        UILaunchScreen: {}
-        UIBackgroundModes: [audio]
+        ENABLE_PREVIEWS: true
+        DEVELOPMENT_ASSET_PATHS: ""
     dependencies:
       - package: Core
       - package: Persistence
@@ -63,12 +64,20 @@ targets:
       - package: LiveSession
       - package: Sync
       - package: DesignSystem
+      - package: Features
     info:
       path: App/Info.plist
       properties:
+        CFBundleDisplayName: Routine
         UILaunchScreen: {}
-        NSSpeechRecognitionUsageDescription: "Not used."
-        CFBundleDisplayName: "Routine"
+        UIUserInterfaceStyle: Automatic
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # No UIBackgroundModes on purpose. CLAUDE.md section 7: background
+        # audio may only be declared once the app genuinely plays audio in the
+        # background, and keeping a silent loop alive to stay resident risks
+        # App Store rejection. Eyes-free use is dim mode today, and the Watch
+        # app later.
 
 schemes:
   PelvicApp:

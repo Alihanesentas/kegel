@@ -1,10 +1,19 @@
 excluded:
   - .build
-  - Packages/*/.build
-
-opt_in_rules:
-  - force_unwrapping
-  - unused_import
+  - Packages/Core/.build
+  - Packages/DesignSystem/.build
+  - Packages/Features/.build
+  - Packages/Persistence/.build
 
 disabled_rules:
   - todo
+
+# `force_unwrapping` is deliberately not opted into. CI runs SwiftLint with
+# --strict, and the rule fires on test fixtures that force-unwrap known-good
+# literals (inline JSON, fixture URLs) — turning it on would fail the build
+# over noise rather than over risk.
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_comments: true

@@ -1,19 +1,21 @@
 import Foundation
 
-/// Level parameters. These come from `content.json` (see `Program/ContentLoader.swift`) —
-/// never hardcoded in Swift, so free/paid limits and durations can be tuned without a release.
+/// Level parameters. Every value here comes from `content.json` (see
+/// `Program/ContentLoader.swift`) — nothing is hardcoded in Swift, so
+/// durations, rep counts and the free/paid boundary can be tuned without
+/// shipping a release. CLAUDE.md section 5.
 public struct Level: Identifiable, Codable, Hashable, Sendable {
     public let id: Int
-    public let title: String
-    public let subtitle: String
+    public let title: LocalizedText
+    public let subtitle: LocalizedText
+    /// Lead-in before the first rep. Content-driven like everything else.
+    public let prepare: TimeInterval
     public let contract: TimeInterval
     public let hold: TimeInterval // 0 skips the "hold" phase
     public let relax: TimeInterval
     public let reps: Int
     public let sets: Int
     public let restBetweenSets: TimeInterval
-
-    public var prepare: TimeInterval { 5 }
 
     public var totalDuration: TimeInterval {
         let perRep = contract + hold + relax
@@ -26,8 +28,9 @@ public struct Level: Identifiable, Codable, Hashable, Sendable {
 
     public init(
         id: Int,
-        title: String,
-        subtitle: String,
+        title: LocalizedText,
+        subtitle: LocalizedText,
+        prepare: TimeInterval,
         contract: TimeInterval,
         hold: TimeInterval,
         relax: TimeInterval,
@@ -38,6 +41,7 @@ public struct Level: Identifiable, Codable, Hashable, Sendable {
         self.id = id
         self.title = title
         self.subtitle = subtitle
+        self.prepare = prepare
         self.contract = contract
         self.hold = hold
         self.relax = relax

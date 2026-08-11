@@ -1,14 +1,55 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "freeLevelLimit": 2,
+  "weeklySessionGoal": 5,
   "levels": [
-    { "id": 1, "title": "Starter", "subtitle": "Find the muscle", "contract": 3, "hold": 0, "relax": 4, "reps": 8, "sets": 1, "restBetweenSets": 0 },
-    { "id": 2, "title": "Base rhythm", "subtitle": "Squeeze, fully release", "contract": 3, "hold": 0, "relax": 4, "reps": 10, "sets": 2, "restBetweenSets": 20 },
-    { "id": 3, "title": "Hold", "subtitle": "Short holds", "contract": 2, "hold": 3, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 20 },
-    { "id": 4, "title": "Endurance", "subtitle": "Longer holds", "contract": 2, "hold": 5, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 25 },
-    { "id": 5, "title": "Control", "subtitle": "Slow and controlled", "contract": 3, "hold": 6, "relax": 6, "reps": 10, "sets": 3, "restBetweenSets": 30 },
-    { "id": 6, "title": "Strength", "subtitle": "Three sets", "contract": 3, "hold": 8, "relax": 6, "reps": 12, "sets": 3, "restBetweenSets": 30 },
-    { "id": 7, "title": "Advanced", "subtitle": "Long holds", "contract": 3, "hold": 10, "relax": 7, "reps": 12, "sets": 3, "restBetweenSets": 35 },
-    { "id": 8, "title": "Mastery", "subtitle": "Full program", "contract": 3, "hold": 12, "relax": 8, "reps": 12, "sets": 4, "restBetweenSets": 40 }
+    {
+      "id": 1,
+      "title": { "en": "Starter", "tr": "Başlangıç" },
+      "subtitle": { "en": "Find the muscle", "tr": "Kası tanı" },
+      "prepare": 5, "contract": 3, "hold": 0, "relax": 4, "reps": 8, "sets": 1, "restBetweenSets": 0
+    },
+    {
+      "id": 2,
+      "title": { "en": "Base rhythm", "tr": "Temel ritim" },
+      "subtitle": { "en": "Squeeze, then fully release", "tr": "Sık ve tam bırak" },
+      "prepare": 5, "contract": 3, "hold": 0, "relax": 4, "reps": 10, "sets": 2, "restBetweenSets": 20
+    },
+    {
+      "id": 3,
+      "title": { "en": "Hold", "tr": "Tutuş" },
+      "subtitle": { "en": "Short holds", "tr": "Kısa tutmalar" },
+      "prepare": 5, "contract": 2, "hold": 3, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 20
+    },
+    {
+      "id": 4,
+      "title": { "en": "Endurance", "tr": "Dayanıklılık" },
+      "subtitle": { "en": "Longer holds", "tr": "Daha uzun tutuş" },
+      "prepare": 5, "contract": 2, "hold": 5, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 25
+    },
+    {
+      "id": 5,
+      "title": { "en": "Control", "tr": "Kontrol" },
+      "subtitle": { "en": "Slow and controlled", "tr": "Yavaş ve kontrollü" },
+      "prepare": 5, "contract": 3, "hold": 6, "relax": 6, "reps": 10, "sets": 3, "restBetweenSets": 30
+    },
+    {
+      "id": 6,
+      "title": { "en": "Strength", "tr": "Güç" },
+      "subtitle": { "en": "Three sets", "tr": "Üç set" },
+      "prepare": 5, "contract": 3, "hold": 8, "relax": 6, "reps": 12, "sets": 3, "restBetweenSets": 30
+    },
+    {
+      "id": 7,
+      "title": { "en": "Advanced", "tr": "İleri" },
+      "subtitle": { "en": "Long holds", "tr": "Uzun tutuşlar" },
+      "prepare": 5, "contract": 3, "hold": 10, "relax": 7, "reps": 12, "sets": 3, "restBetweenSets": 35
+    },
+    {
+      "id": 8,
+      "title": { "en": "Mastery", "tr": "Ustalık" },
+      "subtitle": { "en": "Full program", "tr": "Tam program" },
+      "prepare": 5, "contract": 3, "hold": 12, "relax": 8, "reps": 12, "sets": 4, "restBetweenSets": 40
+    }
   ]
 }

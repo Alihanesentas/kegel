@@ -1,13 +1,14 @@
+import Features
 import SwiftUI
 
 @main
 struct PelvicApp: App {
-    @State private var environment = AppEnvironment()
+    @State private var model = AppEnvironment.makeModel()
 
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(environment)
+            AppRootView()
+                .environment(model)
         }
     }
 }

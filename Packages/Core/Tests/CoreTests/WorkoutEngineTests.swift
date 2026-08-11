@@ -5,16 +5,20 @@ import Testing
 struct WorkoutEngineTests {
 
     // prepare(5) -> contract(2, rep1) -> relax(2, rep1) -> contract(2, rep2) -> relax(2, rep2)
-    private static let testLevel = Level(
-        id: 1, title: "T", subtitle: "S",
-        contract: 2, hold: 0, relax: 2,
-        reps: 2, sets: 1, restBetweenSets: 0
-    )
+    private static let level = makeLevel(prepare: 5, contract: 2, hold: 0, relax: 2, reps: 2, sets: 1)
+    private static let stepDurations = [5.0, 2.0, 2.0, 2.0, 2.0]
 
     private func makeEngine() -> (WorkoutEngine, TestClock) {
         let clock = TestClock()
-        let engine = WorkoutEngine(level: Self.testLevel, clock: clock, feedback: NoOpFeedback())
-        return (engine, clock)
+        return (WorkoutEngine(level: Self.level, clock: clock, feedback: NoOpFeedback()), clock)
+    }
+
+    /// Runs the whole session to completion without waiting on real time.
+    private func runToCompletion(_ engine: WorkoutEngine, _ clock: TestClock) {
+        for duration in Self.stepDurations {
+            clock.advance(by: duration)
+            engine.tick()
+        }
     }
 
     @Test func phaseAdvancesOnlyWhenClockCrossesStepDuration() {
@@ -58,16 +62,13 @@ struct WorkoutEngineTests {
         engine.onFinish = { finished = $0 }
 
         engine.start()
-        for duration in [5.0, 2.0, 2.0, 2.0, 2.0] {
-            clock.advance(by: duration)
-            engine.tick()
-        }
+        runToCompletion(engine, clock)
 
         #expect(engine.state == .finished)
         let record = try #require(finished)
         #expect(record.wasCompleted)
-        #expect(record.completedReps == Self.testLevel.totalReps)
-        #expect(record.plannedReps == Self.testLevel.totalReps)
+        #expect(record.completedReps == Self.level.totalReps)
+        #expect(record.plannedReps == Self.level.totalReps)
     }
 
     @Test func stoppingMidSessionRecordsPartialProgress() throws {
@@ -88,7 +89,7 @@ struct WorkoutEngineTests {
         let record = try #require(interrupted)
         #expect(!record.wasCompleted)
         #expect(record.completedReps == 1)
-        #expect(record.plannedReps == Self.testLevel.totalReps)
+        #expect(record.plannedReps == Self.level.totalReps)
         #expect(engine.state == .idle)
     }
 
@@ -99,5 +100,55 @@ struct WorkoutEngineTests {
 
         engine.skipStep()
         #expect(engine.currentPhase == .contract)
+    }
+
+    // MARK: End-of-session state
+
+    @Test func stoppingAnAlreadyFinishedSessionDoesNotRecordItTwice() {
+        let (engine, clock) = makeEngine()
+        var records: [SessionRecord] = []
+        engine.onFinish = { records.append($0) }
+
+        engine.start()
+        runToCompletion(engine, clock)
+        #expect(records.count == 1)
+
+        engine.stop() // e.g. the user dismisses the summary screen
+
+        #expect(records.count == 1)
+        #expect(records.first?.wasCompleted == true)
+    }
+
+    @Test func currentPhaseIsFinishedOnceTheSessionEnds() {
+        let (engine, clock) = makeEngine()
+        engine.start()
+        runToCompletion(engine, clock)
+
+        #expect(engine.currentPhase == .finished)
+        #expect(engine.remainingInStep == 0)
+    }
+
+    @Test func finishedSessionReportsFullProgressAndEveryRep() {
+        let (engine, clock) = makeEngine()
+        engine.start()
+        runToCompletion(engine, clock)
+
+        #expect(engine.overallProgress == 1)
+        #expect(engine.completedReps == Self.level.totalReps)
+    }
+
+    @Test func startingAgainAfterFinishingResetsAndRecordsSeparately() {
+        let (engine, clock) = makeEngine()
+        var records: [SessionRecord] = []
+        engine.onFinish = { records.append($0) }
+
+        engine.start()
+        runToCompletion(engine, clock)
+        engine.start()
+        #expect(engine.state == .running)
+        #expect(engine.currentPhase == .prepare)
+        runToCompletion(engine, clock)
+
+        #expect(records.count == 2)
     }
 }

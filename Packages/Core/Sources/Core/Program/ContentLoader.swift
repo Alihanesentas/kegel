@@ -7,7 +7,7 @@ public enum ContentLoadError: Error, Equatable {
 
 /// Parses and validates `content.json`. Content that fails validation is
 /// never allowed to reach the app — `load(_:)` silently falls back to the
-/// bundled copy so a broken publish to the CDN can't crash a running app.
+/// bundled copy so a broken publish to the CDN can't break a running app.
 public enum ContentLoader {
 
     /// Decodes and validates raw data, throwing on any problem. Callers that
@@ -39,8 +39,30 @@ public enum ContentLoader {
         return decoded
     }
 
+    /// A level that renders as gibberish or runs for zero seconds is worse
+    /// than no update at all, so structural sanity is checked here rather
+    /// than trusted from the wire.
     private static func isValid(_ schema: ContentSchema) -> Bool {
-        schema.schemaVersion > 0 && !schema.levels.isEmpty
+        guard schema.schemaVersion > 0,
+              schema.weeklySessionGoal > 0,
+              schema.freeLevelLimit >= 0,
+              !schema.levels.isEmpty,
+              Set(schema.levels.map(\.id)).count == schema.levels.count else {
+            return false
+        }
+        return schema.levels.allSatisfy(isValid)
+    }
+
+    private static func isValid(_ level: Level) -> Bool {
+        level.reps > 0
+            && level.sets > 0
+            && level.contract > 0
+            && level.relax > 0
+            && level.hold >= 0
+            && level.prepare >= 0
+            && level.restBetweenSets >= 0
+            && level.title.hasBaseLanguage
+            && level.subtitle.hasBaseLanguage
     }
 
     private static var embeddedData: Data {
