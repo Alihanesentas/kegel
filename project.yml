@@ -1,0 +1,83 @@
+name: PelvicApp
+
+options:
+  minimumXcodeGenVersion: 2.38.0
+  createIntermediateGroups: true
+  bundleIdPrefix: com.kegel
+
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    SWIFT_STRICT_CONCURRENCY: complete
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  Core:
+    path: Packages/Core
+  Persistence:
+    path: Packages/Persistence
+  Feedback:
+    path: Packages/Feedback
+  Notifications:
+    path: Packages/Notifications
+  Purchases:
+    path: Packages/Purchases
+  RemoteContent:
+    path: Packages/RemoteContent
+  Analytics:
+    path: Packages/Analytics
+  LiveSession:
+    path: Packages/LiveSession
+  Sync:
+    path: Packages/Sync
+  DesignSystem:
+    path: Packages/DesignSystem
+
+targets:
+  PelvicApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: App
+    resources:
+      - path: App/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kegel.app
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: true
+        TARGETED_DEVICE_FAMILY: "1"
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+    dependencies:
+      - package: Core
+      - package: Persistence
+      - package: Feedback
+      - package: Notifications
+      - package: Purchases
+      - package: RemoteContent
+      - package: Analytics
+      - package: LiveSession
+      - package: Sync
+      - package: DesignSystem
+    info:
+      path: App/Info.plist
+      properties:
+        UILaunchScreen: {}
+        NSSpeechRecognitionUsageDescription: "Not used."
+        CFBundleDisplayName: "Routine"
+
+schemes:
+  PelvicApp:
+    build:
+      targets:
+        PelvicApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - PelvicApp

@@ -1,0 +1,10 @@
+excluded:
+  - .build
+  - Packages/*/.build
+
+opt_in_rules:
+  - force_unwrapping
+  - unused_import
+
+disabled_rules:
+  - todo

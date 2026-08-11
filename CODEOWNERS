@@ -1,0 +1,13 @@
+# See CLAUDE.md section 4 for the ownership rationale.
+# Replace @dev-a / @dev-b with the actual GitHub usernames of the two developers.
+
+/Packages/Core/            @dev-a
+/Packages/Persistence/     @dev-a
+/Packages/RemoteContent/   @dev-a
+/Packages/Notifications/   @dev-a
+
+/Packages/DesignSystem/    @dev-b
+/Packages/Feedback/        @dev-b
+/Packages/Purchases/       @dev-b
+/Packages/Analytics/       @dev-b
+/App/                      @dev-b

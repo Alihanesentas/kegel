@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "phase.prepare" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Get ready" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Hazırlan" } }
+      }
+    },
+    "phase.contract" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Squeeze" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Sık" } }
+      }
+    },
+    "phase.hold" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hold" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Tut" } }
+      }
+    },
+    "phase.relax" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Release" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Bırak" } }
+      }
+    },
+    "phase.rest" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rest" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Dinlen" } }
+      }
+    },
+    "phase.finished" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "tr" : { "stringUnit" : { "state" : "translated", "value" : "Tamamlandı" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

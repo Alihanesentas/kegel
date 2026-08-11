@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project PelvicApp.xcodeproj \
+            -scheme PelvicApp \
+            -destination "generic/platform=iOS Simulator" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Test
+        run: |
+          xcodebuild test \
+            -project PelvicApp.xcodeproj \
+            -scheme PelvicApp \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            | xcpretty && exit ${PIPESTATUS[0]}
+
+  format-lint:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftFormat and SwiftLint
+        run: brew install swiftformat swiftlint
+
+      - name: SwiftFormat check
+        run: swiftformat --lint .
+
+      - name: SwiftLint
+        run: swiftlint --strict

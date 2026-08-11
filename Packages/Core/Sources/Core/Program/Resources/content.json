@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "freeLevelLimit": 2,
+  "levels": [
+    { "id": 1, "title": "Starter", "subtitle": "Find the muscle", "contract": 3, "hold": 0, "relax": 4, "reps": 8, "sets": 1, "restBetweenSets": 0 },
+    { "id": 2, "title": "Base rhythm", "subtitle": "Squeeze, fully release", "contract": 3, "hold": 0, "relax": 4, "reps": 10, "sets": 2, "restBetweenSets": 20 },
+    { "id": 3, "title": "Hold", "subtitle": "Short holds", "contract": 2, "hold": 3, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 20 },
+    { "id": 4, "title": "Endurance", "subtitle": "Longer holds", "contract": 2, "hold": 5, "relax": 5, "reps": 10, "sets": 2, "restBetweenSets": 25 },
+    { "id": 5, "title": "Control", "subtitle": "Slow and controlled", "contract": 3, "hold": 6, "relax": 6, "reps": 10, "sets": 3, "restBetweenSets": 30 },
+    { "id": 6, "title": "Strength", "subtitle": "Three sets", "contract": 3, "hold": 8, "relax": 6, "reps": 12, "sets": 3, "restBetweenSets": 30 },
+    { "id": 7, "title": "Advanced", "subtitle": "Long holds", "contract": 3, "hold": 10, "relax": 7, "reps": 12, "sets": 3, "restBetweenSets": 35 },
+    { "id": 8, "title": "Mastery", "subtitle": "Full program", "contract": 3, "hold": 12, "relax": 8, "reps": 12, "sets": 4, "restBetweenSets": 40 }
+  ]
+}
