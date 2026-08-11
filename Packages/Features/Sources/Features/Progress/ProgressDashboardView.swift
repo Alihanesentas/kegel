@@ -16,11 +16,15 @@ public struct ProgressDashboardView: View {
         model.sessions.weeklySummary(goal: model.content.weeklySessionGoal)
     }
 
+    @State private var showPaywall = false
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: SpacingToken.md) {
-                    if model.sessions.records.isEmpty {
+                    if !model.isUnlocked(.progress) {
+                        lockedState
+                    } else if model.sessions.records.isEmpty {
                         emptyState
                     } else {
                         weekCard
@@ -31,6 +35,26 @@ public struct ProgressDashboardView: View {
             }
             .background(ColorToken.background)
             .navigationTitle("progress.title")
+            .sheet(isPresented: $showPaywall) {
+                PaywallView {}
+            }
+        }
+    }
+
+    /// Progress history can be a paid feature — which one it is comes from
+    /// content.json (CLAUDE.md section 6). Sessions are still recorded either
+    /// way, so nothing is lost while locked.
+    private var lockedState: some View {
+        Card {
+            VStack(alignment: .leading, spacing: SpacingToken.md) {
+                Text("progress.locked.title")
+                    .font(TypographyToken.sectionTitle)
+                Text("progress.locked.body")
+                    .font(TypographyToken.body)
+                    .foregroundStyle(ColorToken.secondaryText)
+                PrimaryButton("progress.locked.action") { showPaywall = true }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

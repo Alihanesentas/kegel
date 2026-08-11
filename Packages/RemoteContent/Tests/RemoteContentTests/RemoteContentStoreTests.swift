@@ -44,6 +44,9 @@ private func stubbedSession() -> URLSession {
 private func contentJSON(schemaVersion: Int) -> Data {
     Data("""
     {"schemaVersion": \(schemaVersion), "freeLevelLimit": 1, "weeklySessionGoal": 5,
+     "lockedFeatures": ["dimMode"],
+     "muscleGuide": {"title": {"en": "G"}, "intro": {"en": "I"}, "closing": {"en": "C"},
+                     "steps": [{"id": 1, "title": {"en": "S"}, "body": {"en": "B"}}]},
      "levels": [{"id": 1, "title": {"en": "Remote"}, "subtitle": {"en": "S"},
                  "prepare": 5, "contract": 1, "hold": 0, "relax": 1,
                  "reps": 1, "sets": 1, "restBetweenSets": 0}]}

@@ -27,6 +27,32 @@ func makeLevel(
     )
 }
 
+func makeGuide() -> MuscleGuide {
+    MuscleGuide(
+        title: LocalizedText(["en": "Guide"]),
+        intro: LocalizedText(["en": "Intro"]),
+        steps: [MuscleGuide.Step(id: 1, title: LocalizedText(["en": "Step"]), body: LocalizedText(["en": "Body"]))],
+        closing: LocalizedText(["en": "Closing"])
+    )
+}
+
+func makeContent(
+    schemaVersion: Int = 3,
+    freeLevelLimit: Int = 2,
+    weeklySessionGoal: Int = 5,
+    levelCount: Int = 4,
+    lockedFeatures: Set<PaidFeature> = []
+) -> ContentSchema {
+    ContentSchema(
+        schemaVersion: schemaVersion,
+        freeLevelLimit: freeLevelLimit,
+        weeklySessionGoal: weeklySessionGoal,
+        levels: (1...levelCount).map { makeLevel(id: $0) },
+        muscleGuide: makeGuide(),
+        lockedFeatures: lockedFeatures
+    )
+}
+
 func makeRecord(
     date: Date,
     levelID: Int = 1,

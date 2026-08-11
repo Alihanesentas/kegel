@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import SwiftUI
 import UIKit
@@ -11,8 +12,14 @@ public struct SettingsView: View {
     @Environment(AppModel.self) private var model
 
     @State private var showHealthNotice = false
+    @State private var showMuscleGuide = false
     @State private var showPaywall = false
     @State private var didCopyID = false
+
+    @State private var remindersOn = false
+    @State private var reminderTime = Date()
+    /// Guards against the initial sync writing preferences straight back.
+    @State private var hasLoadedReminder = false
 
     public init() {}
 
@@ -25,24 +32,22 @@ public struct SettingsView: View {
                 supportSection
             }
             .navigationTitle("settings.title")
+            .task { syncReminderFromPreferences() }
+            .onChange(of: remindersOn) { _, _ in persistReminder() }
+            .onChange(of: reminderTime) { _, _ in persistReminder() }
             .sheet(isPresented: $showHealthNotice) {
-                NavigationStack {
-                    HealthNoticeView()
-                        .padding(SpacingToken.lg)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                        .background(ColorToken.background)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button("common.close") { showHealthNotice = false }
-                            }
-                        }
-                }
+                sheet { HealthNoticeView() }
+            }
+            .sheet(isPresented: $showMuscleGuide) {
+                sheet { MuscleGuideView(guide: model.content.muscleGuide) }
             }
             .sheet(isPresented: $showPaywall) {
                 PaywallView {}
             }
         }
     }
+
+    // MARK: Sections
 
     private var subscriptionSection: some View {
         Section("settings.subscription") {
@@ -66,15 +71,24 @@ public struct SettingsView: View {
 
     private var reminderSection: some View {
         Section("settings.reminders") {
-            LabeledContent("settings.reminder.time") {
-                Text(verbatim: reminderText)
+            Toggle("settings.reminder.enabled", isOn: $remindersOn)
+                .frame(minHeight: SpacingToken.minTouchTarget)
+
+            if remindersOn {
+                DatePicker(
+                    "settings.reminder.time",
+                    selection: $reminderTime,
+                    displayedComponents: .hourAndMinute
+                )
+                .frame(minHeight: SpacingToken.minTouchTarget)
             }
-            .frame(minHeight: SpacingToken.minTouchTarget)
         }
     }
 
     private var aboutSection: some View {
         Section("settings.about") {
+            Button("settings.muscleGuide") { showMuscleGuide = true }
+                .frame(minHeight: SpacingToken.minTouchTarget)
             Button("settings.healthNotice") { showHealthNotice = true }
                 .frame(minHeight: SpacingToken.minTouchTarget)
         }
@@ -102,11 +116,46 @@ public struct SettingsView: View {
         }
     }
 
-    private var reminderText: String {
-        guard let time = model.preferences.preferences.reminderTime,
-              let hour = time.hour else {
-            return String(localized: "settings.reminder.off", bundle: .module)
+    // MARK: Reminder plumbing
+
+    private func syncReminderFromPreferences() {
+        let saved = model.preferences.preferences
+        remindersOn = saved.reminderTime != nil
+        if let hour = saved.reminderHour {
+            reminderTime = Calendar.current.date(
+                bySettingHour: hour, minute: saved.reminderMinute ?? 0, second: 0, of: Date()
+            ) ?? Date()
         }
-        return String(format: "%02d:%02d", hour, time.minute ?? 0)
+        hasLoadedReminder = true
+    }
+
+    private func persistReminder() {
+        guard hasLoadedReminder else { return }
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        Task {
+            await model.setReminder(
+                hour: remindersOn ? components.hour : nil,
+                minute: remindersOn ? components.minute : nil
+            )
+        }
+    }
+
+    private func sheet<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        NavigationStack {
+            ScrollView {
+                content()
+                    .padding(SpacingToken.lg)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .background(ColorToken.background)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("common.close") {
+                        showHealthNotice = false
+                        showMuscleGuide = false
+                    }
+                }
+            }
+        }
     }
 }

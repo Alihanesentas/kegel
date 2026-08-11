@@ -18,10 +18,16 @@ let package = Package(
         .package(path: "../Analytics")
     ],
     targets: [
+        // The String Catalog deliberately lives in the app target, not here.
+        // SwiftUI resolves `Text("key")` against `Bundle.main`; a catalog
+        // shipped as a package resource lands in `Bundle.module` instead, so
+        // every string in these screens would render as its raw key. Keeping
+        // it in the app is one file instead of a `bundle:` argument on ~90
+        // call sites, several of which (Button, Section, Toggle, …) take no
+        // bundle at all.
         .target(
             name: "Features",
-            dependencies: ["Core", "DesignSystem", "Persistence", "Purchases", "Notifications", "Analytics"],
-            resources: [.process("Resources/Localizable.xcstrings")]
+            dependencies: ["Core", "DesignSystem", "Persistence", "Purchases", "Notifications", "Analytics"]
         ),
         .testTarget(
             name: "FeaturesTests",

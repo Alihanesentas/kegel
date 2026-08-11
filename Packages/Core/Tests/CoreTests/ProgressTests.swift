@@ -4,12 +4,7 @@ import Testing
 
 struct ProgressionRuleTests {
 
-    private let content = ContentSchema(
-        schemaVersion: 2,
-        freeLevelLimit: 2,
-        weeklySessionGoal: 5,
-        levels: (1...4).map { makeLevel(id: $0) }
-    )
+    private let content = makeContent(levelCount: 4)
 
     @Test func firstLevelIsRecommendedWithNoHistory() {
         #expect(ProgressionRule.recommendedLevelID(from: [], in: content) == 1)

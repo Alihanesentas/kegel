@@ -1,10 +1,10 @@
 import DesignSystem
 import SwiftUI
 
-/// Three screens, then straight into training.
+/// Four screens, then straight into training.
 ///
-/// CLAUDE.md section 5 is explicit that onboarding stays short and does not
-/// branch: health notice → goal → reminder time. No questionnaire, no
+/// CLAUDE.md section 5 keeps onboarding short and non-branching: health notice
+/// → muscle guide → how it works → reminder time. No questionnaire, no
 /// screening, nothing that could read as assessing the user.
 public struct OnboardingView: View {
     @Environment(AppModel.self) private var model
@@ -16,21 +16,24 @@ public struct OnboardingView: View {
     @State private var wantsReminder = true
 
     private enum Step: Int, CaseIterable {
-        case disclaimer, goal, reminder
+        case disclaimer, muscleGuide, goal, reminder
     }
 
     public init() {}
 
     public var body: some View {
-        VStack(spacing: SpacingToken.lg) {
-            switch step {
-            case .disclaimer: HealthNoticeView(onContinue: advance)
-            case .goal: goalStep
-            case .reminder: reminderStep
+        ScrollView {
+            VStack(spacing: SpacingToken.lg) {
+                switch step {
+                case .disclaimer: HealthNoticeView(onContinue: advance)
+                case .muscleGuide: MuscleGuideView(guide: model.content.muscleGuide, onContinue: advance)
+                case .goal: goalStep
+                case .reminder: reminderStep
+                }
             }
+            .padding(SpacingToken.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(SpacingToken.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.background)
     }
 
@@ -42,7 +45,6 @@ public struct OnboardingView: View {
             Text("onboarding.goal.body \(model.content.weeklySessionGoal)")
                 .font(TypographyToken.body)
                 .foregroundStyle(ColorToken.secondaryText)
-            Spacer()
             PrimaryButton("common.continue", action: advance)
         }
     }
@@ -68,7 +70,6 @@ public struct OnboardingView: View {
                 .frame(minHeight: SpacingToken.minTouchTarget)
             }
 
-            Spacer()
             PrimaryButton("onboarding.finish") { finish() }
         }
     }
@@ -81,18 +82,13 @@ public struct OnboardingView: View {
     }
 
     private func finish() {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
         Task {
-            let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-            await model.preferences.update {
-                $0.hasCompletedOnboarding = true
-                $0.setReminder(
-                    hour: wantsReminder ? components.hour : nil,
-                    minute: wantsReminder ? components.minute : nil
-                )
-            }
-            if wantsReminder {
-                await model.scheduleReminder()
-            }
+            await model.setReminder(
+                hour: wantsReminder ? components.hour : nil,
+                minute: wantsReminder ? components.minute : nil
+            )
+            await model.preferences.update { $0.hasCompletedOnboarding = true }
             model.analytics.track(.onboardingCompleted)
         }
     }

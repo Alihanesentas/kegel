@@ -1,7 +1,64 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "freeLevelLimit": 2,
   "weeklySessionGoal": 5,
+  "lockedFeatures": ["dimMode", "progress"],
+  "muscleGuide": {
+    "title": {
+      "en": "Finding the right muscles",
+      "tr": "Doğru kasları bulmak"
+    },
+    "intro": {
+      "en": "Most people squeeze the wrong thing at first — usually the belly, thighs or buttocks. Take two minutes to find the right movement before your first session.",
+      "tr": "Çoğu kişi başlangıçta yanlış yeri sıkar — genellikle karın, uyluk veya kalça. İlk seansınızdan önce doğru hareketi bulmak için iki dakika ayırın."
+    },
+    "steps": [
+      {
+        "id": 1,
+        "title": { "en": "Get comfortable", "tr": "Rahat bir pozisyon alın" },
+        "body": {
+          "en": "Sit or lie down somewhere you won't be interrupted. Let your shoulders drop and your jaw unclench.",
+          "tr": "Rahatsız edilmeyeceğiniz bir yerde oturun veya uzanın. Omuzlarınızı ve çenenizi gevşetin."
+        }
+      },
+      {
+        "id": 2,
+        "title": { "en": "Find the movement", "tr": "Hareketi bulun" },
+        "body": {
+          "en": "Imagine you are trying to stop yourself from passing wind, and at the same time lifting slightly upward and inward. That lifting feeling is the movement you are looking for.",
+          "tr": "Gaz çıkarmayı tutmaya çalıştığınızı, aynı anda hafifçe yukarı ve içeri doğru kaldırdığınızı hayal edin. Aradığınız hareket bu kaldırma hissidir."
+        }
+      },
+      {
+        "id": 3,
+        "title": { "en": "Check what should stay still", "tr": "Hareketsiz kalması gerekenleri kontrol edin" },
+        "body": {
+          "en": "Put a hand on your belly. It should stay soft. Your thighs and buttocks should not tighten, and nothing should visibly move. If they do, ease off and try a gentler squeeze.",
+          "tr": "Elinizi karnınıza koyun. Yumuşak kalmalı. Uyluklarınız ve kalçanız kasılmamalı, dışarıdan görünür bir hareket olmamalı. Oluyorsa gücü azaltıp daha hafif bir sıkma deneyin."
+        }
+      },
+      {
+        "id": 4,
+        "title": { "en": "Keep breathing", "tr": "Nefes almaya devam edin" },
+        "body": {
+          "en": "Breathe normally throughout. Holding your breath is the most common mistake and makes the movement harder to feel.",
+          "tr": "Boyunca normal nefes alın. Nefesi tutmak en yaygın hatadır ve hareketi hissetmeyi zorlaştırır."
+        }
+      },
+      {
+        "id": 5,
+        "title": { "en": "Let go completely", "tr": "Tamamen bırakın" },
+        "body": {
+          "en": "Releasing matters as much as squeezing. Let everything relax fully between repetitions — a half-release is not a rest.",
+          "tr": "Bırakmak, sıkmak kadar önemlidir. Tekrarlar arasında her şeyi tamamen gevşetin — yarım bırakma dinlenme değildir."
+        }
+      }
+    ],
+    "closing": {
+      "en": "It is normal for this to feel vague at first. The first level is built around exactly this: short squeezes with long releases, so you can practise the movement itself.",
+      "tr": "Başta belirsiz hissettirmesi normaldir. İlk seviye tam olarak bunun için tasarlandı: uzun bırakmalarla kısa sıkmalar, hareketin kendisini çalışabilmeniz için."
+    }
+  },
   "levels": [
     {
       "id": 1,

@@ -16,6 +16,7 @@ public struct SessionView: View {
     @State private var driver: SessionDriver
     @State private var isDimmed = false
     @State private var summary: SessionRecord?
+    @State private var showPaywall = false
 
     private let level: Level
 
@@ -45,8 +46,10 @@ public struct SessionView: View {
                 Button("session.end") { dismiss() }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("session.dim") { isDimmed = true }
-                    .accessibilityHint("session.dim.hint")
+                // Dim mode may be a paid feature — the boundary comes from
+                // content.json, not from code (CLAUDE.md section 6).
+                Button("session.dim") { enterDimMode() }
+                    .accessibilityHint(dimModeUnlocked ? "session.dim.hint" : "levels.hint.locked")
             }
         }
         .task { startIfNeeded() }
@@ -64,6 +67,24 @@ public struct SessionView: View {
         .onDisappear { driver.stop(record: true) }
         .fullScreenCover(item: $summary) { record in
             SessionSummaryView(level: level, record: record) { dismiss() }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView {
+                // Entering dim mode is the whole reason they got here.
+                if dimModeUnlocked { isDimmed = true }
+            }
+        }
+    }
+
+    private var dimModeUnlocked: Bool {
+        model.isUnlocked(.dimMode)
+    }
+
+    private func enterDimMode() {
+        if dimModeUnlocked {
+            isDimmed = true
+        } else {
+            showPaywall = true
         }
     }
 
@@ -170,7 +191,7 @@ public struct SessionView: View {
     /// Phase changes are the whole point of the screen, so they're announced
     /// rather than left for VoiceOver to discover — CLAUDE.md section 8.
     private func announce(_ phase: Phase) {
-        let text = String(localized: String.LocalizationValue(phase.localizationKey), bundle: .module)
+        let text = String(localized: String.LocalizationValue(phase.localizationKey), bundle: .main)
         AccessibilityNotification.Announcement(text).post()
     }
 }

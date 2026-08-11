@@ -47,12 +47,19 @@ targets:
       - path: App
         excludes:
           - Info.plist
+    # The String Catalog for every screen lives here rather than in the
+    # Features package — see Packages/Features/Package.swift for why.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kegel.app
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: true
         DEVELOPMENT_ASSET_PATHS: ""
+        # RevenueCat public SDK key. Empty here on purpose — keys are not
+        # committed. Provide it locally via Config/Secrets.xcconfig (gitignored)
+        # or as a CI secret. While it's empty the app runs with purchasing off
+        # rather than showing a paywall that can't complete a sale.
+        REVENUECAT_API_KEY: ""
     dependencies:
       - package: Core
       - package: Persistence
@@ -69,6 +76,7 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Routine
+        REVENUECAT_API_KEY: $(REVENUECAT_API_KEY)
         UILaunchScreen: {}
         UIUserInterfaceStyle: Automatic
         UISupportedInterfaceOrientations:

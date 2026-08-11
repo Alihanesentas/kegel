@@ -6,6 +6,7 @@ import Foundation
 import Notifications
 import Persistence
 import Purchases
+import RemoteContent
 
 /// Composition root. The one place that names concrete implementations —
 /// everything below this sees only protocols (CLAUDE.md section 3).
@@ -13,7 +14,15 @@ enum AppEnvironment {
 
     @MainActor
     static func makeModel() -> AppModel {
-        AppModel(
+        let remoteContent = AppConfiguration.remoteContentURL.map { url in
+            RemoteContentStore(remoteURL: url, cacheFileURL: fileURL("content-cache.json"))
+        }
+
+        return AppModel(
+            // Always start from the embedded copy so launch never waits on
+            // disk or network. `refreshContent()` swaps in the cached or newly
+            // fetched file moments later if there's a valid newer one
+            // (CLAUDE.md section 5).
             content: ContentLoader.loadEmbedded(),
             sessions: SessionStore(
                 repository: JSONFileRepository<SessionRecord>(fileURL: fileURL("sessions.json"))
@@ -21,18 +30,28 @@ enum AppEnvironment {
             preferences: PreferencesStore(
                 store: JSONFileStore(fileURL: fileURL("preferences.json")) { UserPreferences() }
             ),
-            subscription: SubscriptionStore(
-                // Real RevenueCat wiring is M3: it needs an API key and
-                // products configured in App Store Connect. Until then this
-                // reports "not subscribed" and purchases are no-ops.
-                provider: NoOpSubscriptionProvider()
-            ),
+            subscription: SubscriptionStore(provider: makeSubscriptionProvider()),
             feedback: FeedbackManager(),
             // Real SDK wiring is M5; the protocol and event list are already
             // in place so screens don't change when it lands.
             analytics: NoOpAnalyticsTracker(),
-            notifications: LocalNotificationScheduler()
+            notifications: LocalNotificationScheduler(),
+            contentRefresh: remoteContent.map { store in
+                { @Sendable in
+                    await store.refresh()
+                    return await store.currentContent()
+                }
+            }
         )
+    }
+
+    /// Purchasing is only live once a RevenueCat key is configured. Without
+    /// one the app reports "not subscribed" and shows no plans, rather than
+    /// pretending to sell something it can't deliver.
+    private static func makeSubscriptionProvider() -> any SubscriptionProviding {
+        let key = AppConfiguration.revenueCatAPIKey
+        guard !key.isEmpty else { return NoOpSubscriptionProvider() }
+        return RevenueCatSubscriptionProvider(apiKey: key, entitlementID: AppConfiguration.entitlementID)
     }
 
     /// Session history and preferences live in Application Support — user

@@ -47,6 +47,7 @@ public enum ContentLoader {
               schema.weeklySessionGoal > 0,
               schema.freeLevelLimit >= 0,
               !schema.levels.isEmpty,
+              schema.muscleGuide.isValid,
               Set(schema.levels.map(\.id)).count == schema.levels.count else {
             return false
         }

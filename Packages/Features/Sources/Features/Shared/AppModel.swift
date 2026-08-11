@@ -3,6 +3,7 @@ import Core
 import Foundation
 import Notifications
 import Observation
+import Purchases
 
 /// The object every screen reads from. Assembled once by the app target and
 /// handed down through the SwiftUI environment.
@@ -11,13 +12,18 @@ import Observation
 @MainActor
 @Observable
 public final class AppModel {
-    public let content: ContentSchema
+    /// Starts as the embedded catalogue and is replaced if a newer, valid
+    /// remote version arrives (CLAUDE.md section 5).
+    public private(set) var content: ContentSchema
+
     public let sessions: SessionStore
     public let preferences: PreferencesStore
     public let subscription: SubscriptionStore
     public let feedback: FeedbackEmitting
     public let analytics: any AnalyticsTracking
     public let notifications: any NotificationScheduling
+
+    private let contentRefresh: (@Sendable () async -> ContentSchema?)?
 
     public init(
         content: ContentSchema,
@@ -26,7 +32,8 @@ public final class AppModel {
         subscription: SubscriptionStore,
         feedback: FeedbackEmitting,
         analytics: any AnalyticsTracking,
-        notifications: any NotificationScheduling
+        notifications: any NotificationScheduling,
+        contentRefresh: (@Sendable () async -> ContentSchema?)? = nil
     ) {
         self.content = content
         self.sessions = sessions
@@ -35,12 +42,22 @@ public final class AppModel {
         self.feedback = feedback
         self.analytics = analytics
         self.notifications = notifications
+        self.contentRefresh = contentRefresh
     }
 
     public func load() async {
         await sessions.load()
         await preferences.load()
-        await subscription.refresh()
+        // The store needs the anonymous ID before it can report entitlements,
+        // so this has to come after preferences are loaded.
+        await subscription.configure(anonymousID: preferences.preferences.anonymousID)
+    }
+
+    /// Fetches newer content in the background. Never blocks the UI and never
+    /// fails visibly — a bad or unreachable file just leaves things as they are.
+    public func refreshContent() async {
+        guard let contentRefresh, let updated = await contentRefresh() else { return }
+        content = updated
     }
 
     // MARK: Access
@@ -49,6 +66,12 @@ public final class AppModel {
     /// Progress never locks a level — CLAUDE.md section 5.
     public func isUnlocked(levelID: Int) -> Bool {
         content.isFree(levelID: levelID) || subscription.isSubscribed
+    }
+
+    /// Whether a paid feature is available right now. Which features are paid
+    /// comes from `content.json`, not from code (CLAUDE.md section 6).
+    public func isUnlocked(_ feature: PaidFeature) -> Bool {
+        !content.requiresSubscription(feature) || subscription.isSubscribed
     }
 
     public func makeEngine(for level: Level) -> WorkoutEngine {
@@ -74,24 +97,34 @@ public final class AppModel {
 
     // MARK: Reminders
 
+    private static let reminderIdentifier = "daily-reminder"
+
     /// Schedules (or clears) the daily reminder to match saved preferences.
     ///
     /// Notifications only remind — they can't run a session (CLAUDE.md
     /// section 7) — and they're local, never remote push (section 6).
     public func scheduleReminder() async {
-        let identifier = "daily-reminder"
         guard let time = preferences.preferences.reminderTime else {
-            await notifications.cancelReminder(identifier: identifier)
+            await notifications.cancelReminder(identifier: Self.reminderIdentifier)
             return
         }
         guard (try? await notifications.requestAuthorization()) == true else { return }
 
+        // Replaces any existing request with the same identifier.
+        // `.main`, not `.module`: the catalog ships with the app target — see
+        // the comment in Package.swift.
         try? await notifications.scheduleDailyReminder(
             at: time,
-            identifier: identifier,
-            title: String(localized: "reminder.title", bundle: .module),
-            body: String(localized: "reminder.body", bundle: .module)
+            identifier: Self.reminderIdentifier,
+            title: String(localized: "reminder.title", bundle: .main),
+            body: String(localized: "reminder.body", bundle: .main)
         )
+    }
+
+    /// Saves a new reminder time (or turns reminders off) and re-registers it.
+    public func setReminder(hour: Int?, minute: Int?) async {
+        await preferences.update { $0.setReminder(hour: hour, minute: minute) }
+        await scheduleReminder()
     }
 
     public func record(_ record: SessionRecord) async {

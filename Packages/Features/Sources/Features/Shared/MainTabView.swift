@@ -35,6 +35,10 @@ public struct AppRootView: View {
                 OnboardingView()
             }
         }
-        .task { await model.load() }
+        .task {
+            await model.load()
+            // Content updates are never worth blocking launch for.
+            await model.refreshContent()
+        }
     }
 }

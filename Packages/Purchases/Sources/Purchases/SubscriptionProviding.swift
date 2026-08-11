@@ -1,14 +1,22 @@
-/// Subscription state, behind a protocol so the app never sees RevenueCat's
-/// `Purchases` type directly — see CLAUDE.md section 2 for why RevenueCat was chosen.
+/// Subscription state and purchasing, behind a protocol so the app never sees
+/// RevenueCat's types directly — see CLAUDE.md sections 2 and 3.
 public protocol SubscriptionProviding: Sendable {
     var isSubscribed: Bool { get async }
-    func purchase(productID: String) async throws
+
+    /// Ties purchases to the app's anonymous ID so a reinstall can restore
+    /// without an account (CLAUDE.md section 5 — no sign-in, ever).
+    func configure(anonymousID: String) async
+
+    /// Plans to show on the paywall. Empty when the store is unreachable or
+    /// nothing is configured yet; the paywall handles that case.
+    func availablePlans() async -> [SubscriptionPlan]
+
+    func purchase(_ plan: SubscriptionPlan) async throws
     func restorePurchases() async throws
 }
 
-/// Placeholder until the RevenueCat-backed implementation lands — that's M3
-/// work (CLAUDE.md roadmap), not part of this milestone. Always reports
-/// "not subscribed"; purchase/restore are no-ops.
+/// Used in previews, tests, and any build where purchasing is deliberately off.
+/// Reports "not subscribed" and offers nothing to buy.
 public struct NoOpSubscriptionProvider: SubscriptionProviding {
     public init() {}
 
@@ -16,6 +24,8 @@ public struct NoOpSubscriptionProvider: SubscriptionProviding {
         get async { false }
     }
 
-    public func purchase(productID: String) async throws {}
+    public func configure(anonymousID: String) async {}
+    public func availablePlans() async -> [SubscriptionPlan] { [] }
+    public func purchase(_ plan: SubscriptionPlan) async throws {}
     public func restorePurchases() async throws {}
 }

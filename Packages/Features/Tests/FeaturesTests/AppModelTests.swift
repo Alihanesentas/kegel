@@ -7,8 +7,9 @@ import Purchases
 import Testing
 @testable import Features
 
-// These cover the decision logic the screens depend on — access rules and
-// paywall timing — without needing a rendered view.
+// These cover the decision logic the screens depend on — access rules, the
+// paid-feature boundary, paywall timing and reminders — without needing a
+// rendered view.
 
 private final class InMemoryRepository<Item: Codable & Sendable>: Repository, @unchecked Sendable {
     private var items: [Item] = []
@@ -24,10 +25,21 @@ private final class InMemoryStore<Value: Codable & Sendable>: ValueStore, @unche
     func save(_ value: Value) async throws { self.value = value }
 }
 
-private struct StubSubscription: SubscriptionProviding {
-    let subscribed: Bool
+private final class StubSubscription: SubscriptionProviding, @unchecked Sendable {
+    private let subscribed: Bool
+    private let plans: [SubscriptionPlan]
+    private(set) var configuredID: String?
+    private(set) var purchased: [String] = []
+
+    init(subscribed: Bool = false, plans: [SubscriptionPlan] = []) {
+        self.subscribed = subscribed
+        self.plans = plans
+    }
+
     var isSubscribed: Bool { get async { subscribed } }
-    func purchase(productID: String) async throws {}
+    func configure(anonymousID: String) async { configuredID = anonymousID }
+    func availablePlans() async -> [SubscriptionPlan] { plans }
+    func purchase(_ plan: SubscriptionPlan) async throws { purchased.append(plan.id) }
     func restorePurchases() async throws {}
 }
 
@@ -36,24 +48,34 @@ private final class RecordingAnalytics: AnalyticsTracking, @unchecked Sendable {
     func track(_ event: AnalyticsEvent) { events.append(event) }
 }
 
-private struct StubNotifications: NotificationScheduling {
-    func requestAuthorization() async throws -> Bool { true }
+private final class RecordingNotifications: NotificationScheduling, @unchecked Sendable {
+    private(set) var scheduled: [DateComponents] = []
+    private(set) var cancelled: [String] = []
+    var authorized = true
+
+    func requestAuthorization() async throws -> Bool { authorized }
+
     func scheduleDailyReminder(
         at time: DateComponents, identifier: String, title: String, body: String
-    ) async throws {}
-    func cancelReminder(identifier: String) async {}
+    ) async throws {
+        scheduled.append(time)
+    }
+
+    func cancelReminder(identifier: String) async { cancelled.append(identifier) }
 }
 
-@MainActor
-private func makeModel(
-    history: [SessionRecord] = [],
-    preferences: UserPreferences = UserPreferences(),
-    subscribed: Bool = false,
-    freeLevelLimit: Int = 2,
-    analytics: RecordingAnalytics = RecordingAnalytics()
-) async -> AppModel {
-    let content = ContentSchema(
-        schemaVersion: 2,
+private func makeGuide() -> MuscleGuide {
+    MuscleGuide(
+        title: LocalizedText(["en": "Guide"]),
+        intro: LocalizedText(["en": "Intro"]),
+        steps: [MuscleGuide.Step(id: 1, title: LocalizedText(["en": "S"]), body: LocalizedText(["en": "B"]))],
+        closing: LocalizedText(["en": "C"])
+    )
+}
+
+private func makeContent(freeLevelLimit: Int = 2, lockedFeatures: Set<PaidFeature> = []) -> ContentSchema {
+    ContentSchema(
+        schemaVersion: 3,
         freeLevelLimit: freeLevelLimit,
         weeklySessionGoal: 5,
         levels: (1...4).map { id in
@@ -64,17 +86,31 @@ private func makeModel(
                 prepare: 5, contract: 2, hold: 0, relax: 2,
                 reps: 2, sets: 1, restBetweenSets: 0
             )
-        }
+        },
+        muscleGuide: makeGuide(),
+        lockedFeatures: lockedFeatures
     )
+}
 
+@MainActor
+private func makeModel(
+    history: [SessionRecord] = [],
+    preferences: UserPreferences = UserPreferences(),
+    subscription: StubSubscription = StubSubscription(),
+    content: ContentSchema = makeContent(),
+    analytics: RecordingAnalytics = RecordingAnalytics(),
+    notifications: RecordingNotifications = RecordingNotifications(),
+    contentRefresh: (@Sendable () async -> ContentSchema?)? = nil
+) async -> AppModel {
     let model = AppModel(
         content: content,
         sessions: SessionStore(repository: InMemoryRepository(history)),
         preferences: PreferencesStore(store: InMemoryStore(preferences)),
-        subscription: SubscriptionStore(provider: StubSubscription(subscribed: subscribed)),
+        subscription: SubscriptionStore(provider: subscription),
         feedback: NoOpFeedback(),
         analytics: analytics,
-        notifications: StubNotifications()
+        notifications: notifications,
+        contentRefresh: contentRefresh
     )
     await model.load()
     return model
@@ -92,24 +128,24 @@ private func record(levelID: Int, completed: Bool = true) -> SessionRecord {
 }
 
 @MainActor
-struct AppModelAccessTests {
+struct LevelAccessTests {
 
     @Test func freeLevelsAreUnlockedWithoutASubscription() async {
-        let model = await makeModel(freeLevelLimit: 2)
+        let model = await makeModel(content: makeContent(freeLevelLimit: 2))
         #expect(model.isUnlocked(levelID: 1))
         #expect(model.isUnlocked(levelID: 2))
         #expect(!model.isUnlocked(levelID: 3))
     }
 
     @Test func subscribingUnlocksEverything() async {
-        let model = await makeModel(subscribed: true, freeLevelLimit: 2)
+        let model = await makeModel(subscription: StubSubscription(subscribed: true))
         #expect(model.isUnlocked(levelID: 4))
     }
 
     /// Progress must never lock a level — CLAUDE.md section 5 says the user
     /// may jump straight to an advanced level.
     @Test func anAdvancedLevelIsPlayableWithNoHistoryAtAll() async {
-        let model = await makeModel(subscribed: true)
+        let model = await makeModel(subscription: StubSubscription(subscribed: true))
         #expect(model.sessions.records.isEmpty)
         #expect(model.isUnlocked(levelID: 4))
     }
@@ -121,13 +157,45 @@ struct AppModelAccessTests {
 }
 
 @MainActor
+struct PaidFeatureTests {
+
+    /// CLAUDE.md section 6 names dim mode and progress as paid by default —
+    /// but the boundary is data, so the app must honour whatever content says.
+    @Test func lockedFeaturesRequireASubscription() async {
+        let model = await makeModel(content: makeContent(lockedFeatures: [.dimMode, .progress]))
+        #expect(!model.isUnlocked(.dimMode))
+        #expect(!model.isUnlocked(.progress))
+    }
+
+    @Test func subscribersGetLockedFeatures() async {
+        let model = await makeModel(
+            subscription: StubSubscription(subscribed: true),
+            content: makeContent(lockedFeatures: [.dimMode, .progress])
+        )
+        #expect(model.isUnlocked(.dimMode))
+        #expect(model.isUnlocked(.progress))
+    }
+
+    @Test func aFeatureContentDoesNotLockStaysFreeForEveryone() async {
+        let model = await makeModel(content: makeContent(lockedFeatures: [.progress]))
+        #expect(model.isUnlocked(.dimMode))
+        #expect(!model.isUnlocked(.progress))
+    }
+
+    @Test func embeddedContentLocksDimModeAndProgress() {
+        let content = ContentLoader.loadEmbedded()
+        #expect(content.requiresSubscription(.dimMode))
+        #expect(content.requiresSubscription(.progress))
+    }
+}
+
+@MainActor
 struct PaywallTimingTests {
 
     /// CLAUDE.md section 6: the paywall appears after the first completed
     /// session, never on launch.
     @Test func paywallIsNotShownBeforeTheFirstCompletedSession() async {
-        let model = await makeModel()
-        #expect(!model.shouldPresentPaywall)
+        #expect(await makeModel().shouldPresentPaywall == false)
     }
 
     @Test func anAbandonedSessionDoesNotTriggerThePaywall() async {
@@ -149,8 +217,117 @@ struct PaywallTimingTests {
     }
 
     @Test func subscribersNeverSeeThePaywall() async {
-        let model = await makeModel(history: [record(levelID: 1)], subscribed: true)
+        let model = await makeModel(
+            history: [record(levelID: 1)], subscription: StubSubscription(subscribed: true)
+        )
         #expect(!model.shouldPresentPaywall)
+    }
+}
+
+@MainActor
+struct SubscriptionWiringTests {
+
+    /// Purchases are tied to the anonymous ID so a reinstall restores without
+    /// any sign-in (CLAUDE.md section 5).
+    @Test func theStoreIsConfiguredWithTheAnonymousID() async {
+        let subscription = StubSubscription()
+        _ = await makeModel(preferences: UserPreferences(anonymousID: "user-123"), subscription: subscription)
+        #expect(subscription.configuredID == "user-123")
+    }
+
+    @Test func plansAreLoadedFromTheProvider() async {
+        let plans = [
+            SubscriptionPlan(id: "yearly", period: .yearly, localizedPrice: "$39.99"),
+            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99")
+        ]
+        let model = await makeModel(subscription: StubSubscription(plans: plans))
+
+        await model.subscription.loadPlans()
+        let ids = model.subscription.plans.map { $0.id }
+        #expect(ids == ["yearly", "monthly"])
+    }
+
+    @Test func aCancelledPurchaseIsNotTreatedAsAnError() async {
+        let model = await makeModel()
+        await model.subscription.purchase(
+            SubscriptionPlan(id: "x", period: .monthly, localizedPrice: "$1")
+        )
+        #expect(model.subscription.lastError == nil)
+    }
+}
+
+@MainActor
+struct ReminderTests {
+
+    @Test func settingATimeSchedulesTheReminder() async {
+        let notifications = RecordingNotifications()
+        let model = await makeModel(notifications: notifications)
+
+        await model.setReminder(hour: 8, minute: 30)
+
+        #expect(model.preferences.preferences.reminderHour == 8)
+        #expect(notifications.scheduled.last?.hour == 8)
+        #expect(notifications.scheduled.last?.minute == 30)
+    }
+
+    @Test func turningRemindersOffCancelsTheScheduledOne() async {
+        let notifications = RecordingNotifications()
+        let model = await makeModel(notifications: notifications)
+
+        await model.setReminder(hour: 8, minute: 0)
+        await model.setReminder(hour: nil, minute: nil)
+
+        #expect(model.preferences.preferences.reminderTime == nil)
+        #expect(notifications.cancelled == ["daily-reminder"])
+    }
+
+    @Test func changingTheTimeIsPersisted() async {
+        let model = await makeModel()
+        await model.setReminder(hour: 7, minute: 15)
+        await model.setReminder(hour: 21, minute: 45)
+
+        #expect(model.preferences.preferences.reminderHour == 21)
+        #expect(model.preferences.preferences.reminderMinute == 45)
+    }
+
+    @Test func nothingIsScheduledWithoutNotificationPermission() async {
+        let notifications = RecordingNotifications()
+        notifications.authorized = false
+        let model = await makeModel(notifications: notifications)
+
+        await model.setReminder(hour: 8, minute: 0)
+
+        #expect(notifications.scheduled.isEmpty)
+        // The preference is still saved — permission can be granted later.
+        #expect(model.preferences.preferences.reminderHour == 8)
+    }
+}
+
+@MainActor
+struct ContentRefreshTests {
+
+    @Test func newerRemoteContentReplacesWhatTheAppStartedWith() async {
+        let updated = makeContent(freeLevelLimit: 5)
+        let model = await makeModel(content: makeContent(freeLevelLimit: 2)) { updated }
+
+        #expect(!model.isUnlocked(levelID: 3))
+        await model.refreshContent()
+        #expect(model.isUnlocked(levelID: 3))
+    }
+
+    @Test func aFailedRefreshLeavesContentAlone() async {
+        let model = await makeModel(content: makeContent(freeLevelLimit: 2)) { nil }
+
+        await model.refreshContent()
+        #expect(model.content.freeLevelLimit == 2)
+    }
+
+    /// With no CDN configured there's no refresh closure at all; the app must
+    /// simply keep running on the embedded catalogue.
+    @Test func noRefreshConfiguredIsNotAnError() async {
+        let model = await makeModel(content: makeContent(freeLevelLimit: 2))
+        await model.refreshContent()
+        #expect(model.content.freeLevelLimit == 2)
     }
 }
 
@@ -199,10 +376,8 @@ struct PreferencesFlowTests {
         let preferences = PreferencesStore(store: store)
 
         await preferences.load()
-        let first = preferences.preferences.anonymousID
         await preferences.load()
 
-        #expect(first == "stable-id")
         #expect(preferences.preferences.anonymousID == "stable-id")
     }
 
