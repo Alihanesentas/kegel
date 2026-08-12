@@ -110,7 +110,7 @@ struct ContentLoaderTests {
         let embedded = ContentLoader.loadEmbedded()
         #expect(embedded.schemaVersion > 0)
         #expect(!embedded.levels.isEmpty)
-        #expect(embedded.levels.allSatisfy(\.title.hasBaseLanguage))
+        #expect(embedded.levels.allSatisfy { $0.title.hasBaseLanguage })
     }
 
     // MARK: Rejected documents
