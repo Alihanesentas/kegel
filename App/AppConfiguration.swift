@@ -5,7 +5,6 @@ import Foundation
 /// Kept in one place so it's obvious what still needs filling in before the
 /// app can ship, rather than having placeholders scattered through the code.
 enum AppConfiguration {
-
     /// RevenueCat public SDK key.
     ///
     /// Read from the Info.plist so it isn't committed and can differ per

@@ -3,7 +3,6 @@ import Testing
 @testable import Core
 
 struct ContentLoaderTests {
-
     /// A minimal but *valid* document. Individual tests override one field to
     /// prove that field is what makes the document unusable.
     static let validGuide = #"""
@@ -39,6 +38,7 @@ struct ContentLoaderTests {
     }
 
     // MARK: Paid feature boundary
+
     //
     // CLAUDE.md section 6: which features are paid must be tunable from
     // content.json, so it can be changed after launch without a release.
@@ -110,10 +110,11 @@ struct ContentLoaderTests {
         let embedded = ContentLoader.loadEmbedded()
         #expect(embedded.schemaVersion > 0)
         #expect(!embedded.levels.isEmpty)
-        #expect(embedded.levels.allSatisfy { $0.title.hasBaseLanguage })
+        #expect(embedded.levels.allSatisfy(\.title.hasBaseLanguage))
     }
 
     // MARK: Rejected documents
+
     //
     // Each of these decodes fine as JSON but describes content the app can't
     // sensibly run, so it must be refused rather than shown to the user.
@@ -173,7 +174,6 @@ struct ContentLoaderTests {
 }
 
 struct LocalizedTextTests {
-
     @Test func resolvesTheRequestedLanguage() {
         let text = LocalizedText(["en": "Starter", "tr": "Başlangıç"])
         #expect(text.resolved(for: Locale(identifier: "tr_TR")) == "Başlangıç")

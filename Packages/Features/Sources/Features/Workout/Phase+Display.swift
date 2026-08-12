@@ -8,5 +8,4 @@ extension Phase {
     var label: LocalizedStringKey {
         LocalizedStringKey(localizationKey)
     }
-
 }

@@ -9,7 +9,6 @@ public enum ContentLoadError: Error, Equatable {
 /// never allowed to reach the app — `load(_:)` silently falls back to the
 /// bundled copy so a broken publish to the CDN can't break a running app.
 public enum ContentLoader {
-
     /// Decodes and validates raw data, throwing on any problem. Callers that
     /// need to know *whether* the data was usable (e.g. `RemoteContent`,
     /// deciding whether to cache it) should use this.
@@ -48,7 +47,8 @@ public enum ContentLoader {
               schema.freeLevelLimit >= 0,
               !schema.levels.isEmpty,
               schema.muscleGuide.isValid,
-              Set(schema.levels.map(\.id)).count == schema.levels.count else {
+              Set(schema.levels.map(\.id)).count == schema.levels.count
+        else {
             return false
         }
         return schema.levels.allSatisfy(isValid)
@@ -68,7 +68,8 @@ public enum ContentLoader {
 
     private static var embeddedData: Data {
         guard let url = Bundle.module.url(forResource: "content", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
+              let data = try? Data(contentsOf: url)
+        else {
             fatalError("Embedded content.json is missing from the Core bundle — this is a build-time bug")
         }
         return data

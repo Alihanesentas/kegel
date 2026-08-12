@@ -22,7 +22,8 @@ public actor RemoteContentStore {
     /// cached remote copy if it's present and still valid, else embedded.
     public func currentContent() -> ContentSchema {
         guard let data = try? Data(contentsOf: cacheFileURL),
-              let cached = try? ContentLoader.decode(data) else {
+              let cached = try? ContentLoader.decode(data)
+        else {
             return ContentLoader.loadEmbedded()
         }
         return cached

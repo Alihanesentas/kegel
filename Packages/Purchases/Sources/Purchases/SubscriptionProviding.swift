@@ -24,8 +24,11 @@ public struct NoOpSubscriptionProvider: SubscriptionProviding {
         get async { false }
     }
 
-    public func configure(anonymousID: String) async {}
-    public func availablePlans() async -> [SubscriptionPlan] { [] }
-    public func purchase(_ plan: SubscriptionPlan) async throws {}
+    public func configure(anonymousID _: String) async {}
+    public func availablePlans() async -> [SubscriptionPlan] {
+        []
+    }
+
+    public func purchase(_: SubscriptionPlan) async throws {}
     public func restorePurchases() async throws {}
 }

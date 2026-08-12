@@ -7,7 +7,6 @@ import Foundation
 /// to an advanced level if they want. The only thing that actually restricts a
 /// level is the subscription boundary (`ContentSchema.isFree(levelID:)`).
 public enum ProgressionRule {
-
     /// One past the highest level the user has *completed*, clamped to the
     /// catalogue. With no history at all this is the first level.
     public static func recommendedLevelID(from records: [SessionRecord], in content: ContentSchema) -> Int {

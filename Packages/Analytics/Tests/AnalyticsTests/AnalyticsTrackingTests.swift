@@ -3,7 +3,9 @@ import Testing
 
 private final class RecordingTracker: AnalyticsTracking, @unchecked Sendable {
     private(set) var events: [AnalyticsEvent] = []
-    func track(_ event: AnalyticsEvent) { events.append(event) }
+    func track(_ event: AnalyticsEvent) {
+        events.append(event)
+    }
 }
 
 struct AnalyticsTrackingTests {

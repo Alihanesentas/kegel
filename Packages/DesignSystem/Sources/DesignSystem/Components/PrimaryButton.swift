@@ -14,10 +14,8 @@ public struct PrimaryButton: View {
     public var body: some View {
         Button(action: action) {
             Text(titleKey)
-                .font(TypographyToken.bodyEmphasized)
                 .frame(maxWidth: .infinity, minHeight: SpacingToken.minTouchTarget)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(ColorToken.accent)
+        .buttonStyle(ThemedButtonStyle())
     }
 }

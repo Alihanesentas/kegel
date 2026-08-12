@@ -108,7 +108,7 @@ public final class AppModel {
             await notifications.cancelReminder(identifier: Self.reminderIdentifier)
             return
         }
-        guard (try? await notifications.requestAuthorization()) == true else { return }
+        guard await (try? notifications.requestAuthorization()) == true else { return }
 
         // Replaces any existing request with the same identifier.
         // `.main`, not `.module`: the catalog ships with the app target — see

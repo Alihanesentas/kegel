@@ -2,15 +2,17 @@ import Foundation
 import Testing
 @testable import Notifications
 
-// `LocalNotificationScheduler` wraps UNUserNotificationCenter, which needs a
-// real app bundle/entitlements to authorize — not exercised here. This checks
-// the protocol contract instead, against a fake that doesn't touch the OS.
+/// `LocalNotificationScheduler` wraps UNUserNotificationCenter, which needs a
+/// real app bundle/entitlements to authorize — not exercised here. This checks
+/// the protocol contract instead, against a fake that doesn't touch the OS.
 private final class RecordingScheduler: NotificationScheduling, @unchecked Sendable {
     private(set) var scheduled: [String] = []
 
-    func requestAuthorization() async throws -> Bool { true }
+    func requestAuthorization() async throws -> Bool {
+        true
+    }
 
-    func scheduleDailyReminder(at time: DateComponents, identifier: String, title: String, body: String) async throws {
+    func scheduleDailyReminder(at _: DateComponents, identifier: String, title _: String, body _: String) async throws {
         scheduled.append(identifier)
     }
 

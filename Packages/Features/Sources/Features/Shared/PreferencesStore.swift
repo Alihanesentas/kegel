@@ -13,7 +13,7 @@ public final class PreferencesStore {
 
     public init(store: any ValueStore<UserPreferences>, initial: UserPreferences = UserPreferences()) {
         self.store = store
-        self.preferences = initial
+        preferences = initial
     }
 
     public func load() async {

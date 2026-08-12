@@ -8,7 +8,6 @@ private struct Item: Codable, Sendable, Equatable {
 }
 
 struct JSONFileRepositoryTests {
-
     private func tempFileURL() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)

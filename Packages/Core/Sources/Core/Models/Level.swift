@@ -24,7 +24,9 @@ public struct Level: Identifiable, Codable, Hashable, Sendable {
         return prepare + work + rest
     }
 
-    public var totalReps: Int { reps * sets }
+    public var totalReps: Int {
+        reps * sets
+    }
 
     public init(
         id: Int,
@@ -53,11 +55,11 @@ public struct Level: Identifiable, Codable, Hashable, Sendable {
     /// Expands the level into a flat step list. The engine only ever executes this list.
     public func buildSteps() -> [WorkoutStep] {
         var steps: [WorkoutStep] = [
-            WorkoutStep(phase: .prepare, duration: prepare, repIndex: nil, setIndex: nil)
+            WorkoutStep(phase: .prepare, duration: prepare, repIndex: nil, setIndex: nil),
         ]
 
-        for set in 1...sets {
-            for rep in 1...reps {
+        for set in 1 ... sets {
+            for rep in 1 ... reps {
                 steps.append(WorkoutStep(phase: .contract, duration: contract, repIndex: rep, setIndex: set))
                 if hold > 0 {
                     steps.append(WorkoutStep(phase: .hold, duration: hold, repIndex: rep, setIndex: set))

@@ -690,6 +690,118 @@
         }
       }
     },
+    "summary.learn.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good to know"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilmenizde fayda var"
+          }
+        }
+      }
+    },
+    "summary.tip.breath.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep breathing"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nefes almaya devam edin"
+          }
+        }
+      }
+    },
+    "summary.tip.breath.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe steadily during each contraction. Holding your breath is not part of the exercise."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Her kasılmada düzenli nefes alın. Nefesinizi tutmak egzersizin bir parçası değildir."
+          }
+        }
+      }
+    },
+    "summary.tip.relax.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relax fully between reps"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tekrarlar arasında tamamen gevşeyin"
+          }
+        }
+      }
+    },
+    "summary.tip.relax.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The rest between contractions is part of the exercise. Let go completely before the next rep."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kasılmalar arasındaki dinlenme egzersizin parçasıdır. Bir sonraki tekrardan önce tamamen gevşeyin."
+          }
+        }
+      }
+    },
+    "summary.tip.regular.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regularity over intensity"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yoğunluktan çok düzenlilik"
+          }
+        }
+      }
+    },
+    "summary.tip.regular.body": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short sessions done regularly count more than long sessions done rarely."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Düzenli yapılan kısa seanslar, nadir yapılan uzun seanslardan daha değerlidir."
+          }
+        }
+      }
+    },
     "progress.title": {
       "localizations": {
         "en": {

@@ -6,7 +6,6 @@ import Testing
 // the paywall renders from.
 
 struct NoOpSubscriptionProviderTests {
-
     @Test func alwaysReportsNotSubscribed() async {
         #expect(await NoOpSubscriptionProvider().isSubscribed == false)
     }
@@ -24,7 +23,6 @@ struct NoOpSubscriptionProviderTests {
 }
 
 struct SubscriptionPlanTests {
-
     @Test func monthlyPlansCarryNoPerMonthBreakdown() {
         let plan = SubscriptionPlan(id: "m", period: .monthly, localizedPrice: "$4.99")
         #expect(plan.localizedMonthlyEquivalent == nil)

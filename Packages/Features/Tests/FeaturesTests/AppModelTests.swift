@@ -13,16 +13,32 @@ import Testing
 
 private final class InMemoryRepository<Item: Codable & Sendable>: Repository, @unchecked Sendable {
     private var items: [Item] = []
-    init(_ items: [Item] = []) { self.items = items }
-    func loadAll() async throws -> [Item] { items }
-    func save(_ items: [Item]) async throws { self.items = items }
+    init(_ items: [Item] = []) {
+        self.items = items
+    }
+
+    func loadAll() async throws -> [Item] {
+        items
+    }
+
+    func save(_ items: [Item]) async throws {
+        self.items = items
+    }
 }
 
 private final class InMemoryStore<Value: Codable & Sendable>: ValueStore, @unchecked Sendable {
     private var value: Value
-    init(_ value: Value) { self.value = value }
-    func load() async -> Value { value }
-    func save(_ value: Value) async throws { self.value = value }
+    init(_ value: Value) {
+        self.value = value
+    }
+
+    func load() async -> Value {
+        value
+    }
+
+    func save(_ value: Value) async throws {
+        self.value = value
+    }
 }
 
 private final class StubSubscription: SubscriptionProviding, @unchecked Sendable {
@@ -36,16 +52,30 @@ private final class StubSubscription: SubscriptionProviding, @unchecked Sendable
         self.plans = plans
     }
 
-    var isSubscribed: Bool { get async { subscribed } }
-    func configure(anonymousID: String) async { configuredID = anonymousID }
-    func availablePlans() async -> [SubscriptionPlan] { plans }
-    func purchase(_ plan: SubscriptionPlan) async throws { purchased.append(plan.id) }
+    var isSubscribed: Bool {
+        get async { subscribed }
+    }
+
+    func configure(anonymousID: String) async {
+        configuredID = anonymousID
+    }
+
+    func availablePlans() async -> [SubscriptionPlan] {
+        plans
+    }
+
+    func purchase(_ plan: SubscriptionPlan) async throws {
+        purchased.append(plan.id)
+    }
+
     func restorePurchases() async throws {}
 }
 
 private final class RecordingAnalytics: AnalyticsTracking, @unchecked Sendable {
     private(set) var events: [AnalyticsEvent] = []
-    func track(_ event: AnalyticsEvent) { events.append(event) }
+    func track(_ event: AnalyticsEvent) {
+        events.append(event)
+    }
 }
 
 private final class RecordingNotifications: NotificationScheduling, @unchecked Sendable {
@@ -53,15 +83,19 @@ private final class RecordingNotifications: NotificationScheduling, @unchecked S
     private(set) var cancelled: [String] = []
     var authorized = true
 
-    func requestAuthorization() async throws -> Bool { authorized }
+    func requestAuthorization() async throws -> Bool {
+        authorized
+    }
 
     func scheduleDailyReminder(
-        at time: DateComponents, identifier: String, title: String, body: String
+        at time: DateComponents, identifier _: String, title _: String, body _: String
     ) async throws {
         scheduled.append(time)
     }
 
-    func cancelReminder(identifier: String) async { cancelled.append(identifier) }
+    func cancelReminder(identifier: String) async {
+        cancelled.append(identifier)
+    }
 }
 
 private func makeGuide() -> MuscleGuide {
@@ -78,7 +112,7 @@ private func makeContent(freeLevelLimit: Int = 2, lockedFeatures: Set<PaidFeatur
         schemaVersion: 3,
         freeLevelLimit: freeLevelLimit,
         weeklySessionGoal: 5,
-        levels: (1...4).map { id in
+        levels: (1 ... 4).map { id in
             Level(
                 id: id,
                 title: LocalizedText(["en": "Level \(id)"]),
@@ -129,7 +163,6 @@ private func record(levelID: Int, completed: Bool = true) -> SessionRecord {
 
 @MainActor
 struct LevelAccessTests {
-
     @Test func freeLevelsAreUnlockedWithoutASubscription() async {
         let model = await makeModel(content: makeContent(freeLevelLimit: 2))
         #expect(model.isUnlocked(levelID: 1))
@@ -158,7 +191,6 @@ struct LevelAccessTests {
 
 @MainActor
 struct PaidFeatureTests {
-
     /// CLAUDE.md section 6 names dim mode and progress as paid by default —
     /// but the boundary is data, so the app must honour whatever content says.
     @Test func lockedFeaturesRequireASubscription() async {
@@ -191,7 +223,6 @@ struct PaidFeatureTests {
 
 @MainActor
 struct PaywallTimingTests {
-
     /// CLAUDE.md section 6: the paywall appears after the first completed
     /// session, never on launch.
     @Test func paywallIsNotShownBeforeTheFirstCompletedSession() async {
@@ -226,7 +257,6 @@ struct PaywallTimingTests {
 
 @MainActor
 struct SubscriptionWiringTests {
-
     /// Purchases are tied to the anonymous ID so a reinstall restores without
     /// any sign-in (CLAUDE.md section 5).
     @Test func theStoreIsConfiguredWithTheAnonymousID() async {
@@ -238,12 +268,12 @@ struct SubscriptionWiringTests {
     @Test func plansAreLoadedFromTheProvider() async {
         let plans = [
             SubscriptionPlan(id: "yearly", period: .yearly, localizedPrice: "$39.99"),
-            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99")
+            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99"),
         ]
         let model = await makeModel(subscription: StubSubscription(plans: plans))
 
         await model.subscription.loadPlans()
-        let ids = model.subscription.plans.map { $0.id }
+        let ids = model.subscription.plans.map(\.id)
         #expect(ids == ["yearly", "monthly"])
     }
 
@@ -258,7 +288,6 @@ struct SubscriptionWiringTests {
 
 @MainActor
 struct ReminderTests {
-
     @Test func settingATimeSchedulesTheReminder() async {
         let notifications = RecordingNotifications()
         let model = await makeModel(notifications: notifications)
@@ -305,7 +334,6 @@ struct ReminderTests {
 
 @MainActor
 struct ContentRefreshTests {
-
     @Test func newerRemoteContentReplacesWhatTheAppStartedWith() async {
         let updated = makeContent(freeLevelLimit: 5)
         let model = await makeModel(content: makeContent(freeLevelLimit: 2)) { updated }
@@ -333,14 +361,13 @@ struct ContentRefreshTests {
 
 @MainActor
 struct SessionRecordingTests {
-
     @Test func recordingASessionPersistsItAndEmitsABehaviourEvent() async {
         let analytics = RecordingAnalytics()
         let model = await makeModel(analytics: analytics)
 
         await model.record(record(levelID: 3))
 
-        let names = analytics.events.map { $0.name }
+        let names = analytics.events.map(\.name)
         #expect(model.sessions.records.count == 1)
         #expect(names == ["session_completed"])
     }
@@ -351,7 +378,7 @@ struct SessionRecordingTests {
 
         await model.record(record(levelID: 1, completed: false))
 
-        let names = analytics.events.map { $0.name }
+        let names = analytics.events.map(\.name)
         #expect(names == ["session_abandoned"])
     }
 
@@ -363,14 +390,13 @@ struct SessionRecordingTests {
 
         await model.record(record(levelID: 3))
 
-        let allBare = analytics.events.allSatisfy { $0.parameters.isEmpty }
+        let allBare = analytics.events.allSatisfy(\.parameters.isEmpty)
         #expect(allBare)
     }
 }
 
 @MainActor
 struct PreferencesFlowTests {
-
     @Test func anonymousIDSurvivesReload() async {
         let store = InMemoryStore(UserPreferences(anonymousID: "stable-id"))
         let preferences = PreferencesStore(store: store)

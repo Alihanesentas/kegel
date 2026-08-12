@@ -1,3 +1,4 @@
+import DesignSystem
 import Features
 import SwiftUI
 
@@ -9,6 +10,7 @@ struct PelvicApp: App {
         WindowGroup {
             AppRootView()
                 .environment(model)
+                .tint(ColorToken.accent)
         }
     }
 }
