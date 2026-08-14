@@ -27,10 +27,7 @@ let package = Package(
         // bundle at all.
         .target(
             name: "Features",
-            dependencies: ["Core", "DesignSystem", "Persistence", "Purchases", "Notifications", "Analytics"],
-            swiftSettings: [
-                .unsafeFlags(["-DSUBSCRIPTION_BUILD"])
-            ]
+            dependencies: ["Core", "DesignSystem", "Persistence", "Purchases", "Notifications", "Analytics"]
         ),
         .testTarget(
             name: "FeaturesTests",

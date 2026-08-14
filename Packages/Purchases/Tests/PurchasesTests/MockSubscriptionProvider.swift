@@ -57,7 +57,7 @@ actor MockSubscriptionProvider: SubscriptionProviding {
         "pro"
     }
 
-    func availablePlans() async -> [SubscriptionPlan] {
+    func availablePlans() async throws -> [SubscriptionPlan] {
         availablePlansMock
     }
 

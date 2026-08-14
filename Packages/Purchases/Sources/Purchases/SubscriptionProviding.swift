@@ -7,9 +7,9 @@ public protocol SubscriptionProviding: Sendable {
     /// without an account (CLAUDE.md section 5 — no sign-in, ever).
     func configure(anonymousID: String) async
 
-    /// Plans to show on the paywall. Empty when the store is unreachable or
-    /// nothing is configured yet; the paywall handles that case.
-    func availablePlans() async -> [SubscriptionPlan]
+    /// Plans to show on the paywall. Throws if the store is misconfigured
+    /// or unreachable so errors can be surfaced to the user.
+    func availablePlans() async throws -> [SubscriptionPlan]
 
     func purchase(_ plan: SubscriptionPlan) async throws
     func restorePurchases() async throws
@@ -25,7 +25,7 @@ public struct NoOpSubscriptionProvider: SubscriptionProviding {
     }
 
     public func configure(anonymousID _: String) async {}
-    public func availablePlans() async -> [SubscriptionPlan] {
+    public func availablePlans() async throws -> [SubscriptionPlan] {
         []
     }
 

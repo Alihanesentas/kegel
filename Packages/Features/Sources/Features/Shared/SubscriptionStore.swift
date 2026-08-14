@@ -49,7 +49,16 @@ public final class SubscriptionStore {
     }
 
     public func loadPlans() async {
-        plans = await provider.availablePlans()
+        lastError = nil
+        do {
+            plans = try await provider.availablePlans()
+        } catch let error as SubscriptionError {
+            lastError = error
+            plans = []
+        } catch {
+            lastError = .failed(error.localizedDescription)
+            plans = []
+        }
     }
 
     public func purchase(_ plan: SubscriptionPlan) async {
