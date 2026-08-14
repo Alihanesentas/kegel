@@ -19,7 +19,9 @@ public struct WeeklySummary: Equatable, Sendable {
         self.streakWeeks = streakWeeks
     }
 
-    public var goalMet: Bool { sessionsThisWeek >= goal }
+    public var goalMet: Bool {
+        sessionsThisWeek >= goal
+    }
 
     /// 0-1, capped — for a progress bar.
     public var progress: Double {

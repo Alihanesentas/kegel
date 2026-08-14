@@ -19,7 +19,7 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
         try? hapticEngine?.start()
     }
 
-    public func cue(for phase: Phase, duration: Double) {
+    public func cue(for phase: Phase, duration _: Double) {
         playHaptic(for: phase)
         speak(phase.localizationKey)
     }
@@ -32,10 +32,10 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
 
     private func configureAudioSession() {
         #if os(iOS)
-        let session = AVAudioSession.sharedInstance()
-        // Never take over the user's music — mix in and duck instead of interrupting.
-        try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
-        try? session.setActive(true)
+            let session = AVAudioSession.sharedInstance()
+            // Never take over the user's music — mix in and duck instead of interrupting.
+            try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+            try? session.setActive(true)
         #endif
     }
 
@@ -64,7 +64,7 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
             eventType: .hapticTransient,
             parameters: [
                 CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
             ],
             relativeTime: 0
         )
@@ -76,7 +76,7 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
             eventType: .hapticContinuous,
             parameters: [
                 CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
             ],
             relativeTime: 0,
             duration: duration

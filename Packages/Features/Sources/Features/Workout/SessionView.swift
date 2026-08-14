@@ -25,7 +25,9 @@ public struct SessionView: View {
         _driver = State(initialValue: SessionDriver(engine: engine))
     }
 
-    private var engine: WorkoutEngine { driver.engine }
+    private var engine: WorkoutEngine {
+        driver.engine
+    }
 
     public var body: some View {
         ZStack {
@@ -55,12 +57,16 @@ public struct SessionView: View {
         .task { startIfNeeded() }
         .onChange(of: engine.currentPhase) { _, phase in announce(phase) }
         .onChange(of: engine.state) { _, state in
-            if state == .finished { isDimmed = false }
+            if state == .finished {
+                isDimmed = false
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             // Haptics and speech stop when the app leaves the foreground, so a
             // session that kept "running" there would silently lose its cues.
-            if phase != .active, engine.state == .running { driver.pause() }
+            if phase != .active, engine.state == .running {
+                driver.pause()
+            }
         }
         // Recording is idempotent: the engine refuses to log a session twice,
         // so a session that ended on its own isn't re-recorded as abandoned.
@@ -71,7 +77,9 @@ public struct SessionView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView {
                 // Entering dim mode is the whole reason they got here.
-                if dimModeUnlocked { isDimmed = true }
+                if dimModeUnlocked {
+                    isDimmed = true
+                }
             }
         }
     }
@@ -155,6 +163,7 @@ public struct SessionView: View {
                 .monospacedDigit()
         }
         .accessibilityElement(children: .combine)
+        .slideOnChange(engine.currentPhase, from: .trailing)
     }
 
     private var controls: some View {
@@ -162,14 +171,11 @@ public struct SessionView: View {
             Button(engine.state == .paused ? "session.resume" : "session.pause") {
                 driver.togglePause()
             }
-            .frame(maxWidth: .infinity, minHeight: SpacingToken.minTouchTarget)
+            .buttonStyle(ThemedSecondaryButtonStyle())
 
             Button("session.skip") { driver.skip() }
-                .frame(maxWidth: .infinity, minHeight: SpacingToken.minTouchTarget)
+                .buttonStyle(ThemedSecondaryButtonStyle())
         }
-        .buttonStyle(.bordered)
-        .font(TypographyToken.bodyEmphasized)
-        .tint(ColorToken.accent)
         .padding(.horizontal, SpacingToken.lg)
     }
 

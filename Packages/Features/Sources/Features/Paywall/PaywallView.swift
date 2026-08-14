@@ -17,7 +17,9 @@ struct PaywallView: View {
 
     @State private var selectedPlanID: String?
 
-    private var store: SubscriptionStore { model.subscription }
+    private var store: SubscriptionStore {
+        model.subscription
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingToken.lg) {
@@ -36,7 +38,11 @@ struct PaywallView: View {
         }
         .alert(
             "paywall.error.title",
-            isPresented: Binding(get: { store.lastError != nil }, set: { if !$0 { store.clearError() } })
+            isPresented: Binding(get: { store.lastError != nil }, set: {
+                if !$0 {
+                    store.clearError()
+                }
+            })
         ) {
             Button("common.close") { store.clearError() }
         } message: {

@@ -3,7 +3,6 @@ import Testing
 @testable import Persistence
 
 struct JSONFileStoreTests {
-
     private func tempFileURL() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -47,7 +46,6 @@ struct JSONFileStoreTests {
 }
 
 struct UserPreferencesTests {
-
     @Test func remindersAreOffWhenNoHourIsSet() {
         #expect(UserPreferences().reminderTime == nil)
     }

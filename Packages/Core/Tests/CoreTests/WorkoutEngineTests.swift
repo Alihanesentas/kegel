@@ -3,7 +3,6 @@ import Testing
 
 @MainActor
 struct WorkoutEngineTests {
-
     // prepare(5) -> contract(2, rep1) -> relax(2, rep1) -> contract(2, rep2) -> relax(2, rep2)
     private static let level = makeLevel(prepare: 5, contract: 2, hold: 0, relax: 2, reps: 2, sets: 1)
     private static let stepDurations = [5.0, 2.0, 2.0, 2.0, 2.0]

@@ -3,7 +3,6 @@ import Testing
 @testable import Core
 
 struct ProgressionRuleTests {
-
     private let content = makeContent(levelCount: 4)
 
     @Test func firstLevelIsRecommendedWithNoHistory() {
@@ -13,7 +12,7 @@ struct ProgressionRuleTests {
     @Test func recommendsTheLevelAfterTheHighestCompletedOne() {
         let records = [
             makeRecord(date: date("2026-01-05T10:00:00Z"), levelID: 1),
-            makeRecord(date: date("2026-01-06T10:00:00Z"), levelID: 3)
+            makeRecord(date: date("2026-01-06T10:00:00Z"), levelID: 3),
         ]
         #expect(ProgressionRule.recommendedLevelID(from: records, in: content) == 4)
     }
@@ -37,7 +36,6 @@ struct ProgressionRuleTests {
 }
 
 struct PersonalRecordsTests {
-
     @Test func emptyHistoryProducesZeroes() {
         let records = PersonalRecords(records: [])
         #expect(records == .empty)
@@ -50,7 +48,7 @@ struct PersonalRecordsTests {
             makeRecord(
                 date: date("2026-01-07T10:00:00Z"), levelID: 4,
                 completedReps: 5, duration: 30, wasCompleted: false
-            )
+            ),
         ]
 
         let records = PersonalRecords(records: history)
@@ -66,8 +64,7 @@ struct PersonalRecordsTests {
 }
 
 struct WeeklySummaryTests {
-
-    // 2026-01-05 is a Monday; the week runs 05-11 Jan.
+    /// 2026-01-05 is a Monday; the week runs 05-11 Jan.
     private let now = date("2026-01-08T12:00:00Z")
 
     private func summary(_ records: [SessionRecord], goal: Int = 3) -> WeeklySummary {
@@ -78,7 +75,7 @@ struct WeeklySummaryTests {
         let result = summary([
             makeRecord(date: date("2026-01-05T08:00:00Z")),
             makeRecord(date: date("2026-01-07T08:00:00Z")),
-            makeRecord(date: date("2026-01-02T08:00:00Z")) // previous week
+            makeRecord(date: date("2026-01-02T08:00:00Z")), // previous week
         ])
 
         #expect(result.sessionsThisWeek == 2)
@@ -86,7 +83,7 @@ struct WeeklySummaryTests {
     }
 
     @Test func progressIsCappedAtOne() {
-        let result = summary((0..<5).map { makeRecord(date: date("2026-01-0\(5 + $0)T08:00:00Z")) }, goal: 3)
+        let result = summary((0 ..< 5).map { makeRecord(date: date("2026-01-0\(5 + $0)T08:00:00Z")) }, goal: 3)
         #expect(result.goalMet)
         #expect(result.progress == 1)
     }

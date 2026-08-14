@@ -2,7 +2,6 @@ import Testing
 @testable import Core
 
 struct LevelStepsTests {
-
     @Test func stepCountMatchesRepsAndSets() {
         let steps = makeLevel(hold: 2, reps: 2, sets: 2, restBetweenSets: 10).buildSteps()
 

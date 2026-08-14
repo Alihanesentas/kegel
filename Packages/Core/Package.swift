@@ -7,7 +7,7 @@ let package = Package(
     // iOS simulator. The app target itself targets iOS 17 (see project.yml).
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "Core", targets: ["Core"])
+        .library(name: "Core", targets: ["Core"]),
     ],
     targets: [
         .target(
@@ -17,7 +17,7 @@ let package = Package(
         .testTarget(
             name: "CoreTests",
             dependencies: ["Core"]
-        )
+        ),
     ],
     swiftLanguageModes: [.v6]
 )

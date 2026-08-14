@@ -15,7 +15,6 @@ import Observation
 @MainActor
 @Observable
 public final class WorkoutEngine {
-
     public enum State: Equatable, Sendable {
         case idle
         case running
@@ -44,7 +43,7 @@ public final class WorkoutEngine {
 
     public init(level: Level, clock: Clock = SystemClock(), feedback: FeedbackEmitting = NoOpFeedback()) {
         self.level = level
-        self.steps = level.buildSteps()
+        steps = level.buildSteps()
         self.clock = clock
         self.feedback = feedback
     }
@@ -91,20 +90,27 @@ public final class WorkoutEngine {
         return completedSteps.filter { $0.phase == .relax }.count
     }
 
-    public var currentSet: Int { currentStep?.setIndex ?? 1 }
-    public var currentRep: Int { currentStep?.repIndex ?? 0 }
+    public var currentSet: Int {
+        currentStep?.setIndex ?? 1
+    }
+
+    public var currentRep: Int {
+        currentStep?.repIndex ?? 0
+    }
 
     // MARK: Control
 
     public func load(level: Level) {
         stop(record: false)
         self.level = level
-        self.steps = level.buildSteps()
+        steps = level.buildSteps()
     }
 
     public func start() {
         guard state == .idle || state == .finished else { return }
-        if steps.isEmpty { steps = level.buildSteps() }
+        if steps.isEmpty {
+            steps = level.buildSteps()
+        }
         stepIndex = 0
         elapsedInStep = 0
         carriedElapsed = 0

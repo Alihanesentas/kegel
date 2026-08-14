@@ -13,6 +13,6 @@ public protocol FeedbackEmitting: Sendable {
 public struct NoOpFeedback: FeedbackEmitting {
     public init() {}
     public func prepare() {}
-    public func cue(for phase: Phase, duration: Double) {}
+    public func cue(for _: Phase, duration _: Double) {}
     public func countdownTick() {}
 }

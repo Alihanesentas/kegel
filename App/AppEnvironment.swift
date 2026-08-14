@@ -11,7 +11,6 @@ import RemoteContent
 /// Composition root. The one place that names concrete implementations —
 /// everything below this sees only protocols (CLAUDE.md section 3).
 enum AppEnvironment {
-
     @MainActor
     static func makeModel() -> AppModel {
         let remoteContent = AppConfiguration.remoteContentURL.map { url in
