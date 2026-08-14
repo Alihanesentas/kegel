@@ -72,7 +72,13 @@ public struct SessionView: View {
         // so a session that ended on its own isn't re-recorded as abandoned.
         .onDisappear { driver.stop(record: true) }
         .fullScreenCover(item: $summary) { record in
-            SessionSummaryView(level: level, record: record) { dismiss() }
+            SessionSummaryView(level: level, record: record) {
+                // Close the cover first — dismissing the presenting SessionView
+                // while its own fullScreenCover is still up leaves the summary
+                // stuck on screen instead of returning to what was open before.
+                summary = nil
+                dismiss()
+            }
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView {
