@@ -40,7 +40,7 @@ private struct SlideOnChangeModifier<Value: Hashable>: ViewModifier {
 public extension View {
     /// Replaces this view with a sliding transition when `value` changes,
     /// falling back to a fade when Reduce Motion is on.
-    func slideOnChange<some Value: Hashable>(_ value: Value, from edge: Edge) -> some View {
+    func slideOnChange<Value: Hashable>(_ value: Value, from edge: Edge) -> some View {
         modifier(SlideOnChangeModifier(value: value, edge: edge))
     }
 }
