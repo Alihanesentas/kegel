@@ -44,3 +44,30 @@ public extension View {
         modifier(SlideOnChangeModifier(value: value, edge: edge))
     }
 }
+
+private struct PhaseTransitionModifier<Value: Hashable>: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    let value: Value
+
+    func body(content: Content) -> some View {
+        content
+            .id(value)
+            .transition(reduceMotion ? .opacity : .scale(scale: 0.92).combined(with: .opacity))
+            .animation(
+                reduceMotion
+                    ? .easeInOut(duration: MotionToken.fast)
+                    : .spring(response: 0.35, dampingFraction: 0.75),
+                value: value
+            )
+    }
+}
+
+public extension View {
+    /// A subtle scale + fade used when the workout phase changes. Reduce
+    /// Motion never removes the transition outright (CLAUDE.md section 8) —
+    /// it just stops moving and becomes a plain fade.
+    func phaseTransition<Value: Hashable>(_ value: Value) -> some View {
+        modifier(PhaseTransitionModifier(value: value))
+    }
+}

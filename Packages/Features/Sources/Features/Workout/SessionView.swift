@@ -108,7 +108,7 @@ public struct SessionView: View {
                 .padding(.horizontal, SpacingToken.lg)
 
             ProgressView(value: engine.overallProgress)
-                .tint(ColorToken.accent)
+                .progressViewStyle(.accentBar)
                 .padding(.horizontal, SpacingToken.lg)
                 .accessibilityLabel("session.overall.progress")
 
@@ -123,8 +123,9 @@ public struct SessionView: View {
         VStack(spacing: SpacingToken.lg) {
             Spacer()
             Text(engine.currentPhase.label)
-                .font(TypographyToken.screenTitle)
+                .phaseLabelStyle()
                 .foregroundStyle(.white.opacity(0.65))
+                .phaseTransition(engine.currentPhase)
             Text(verbatim: remainingText)
                 .font(TypographyToken.sectionTitle)
                 .foregroundStyle(.white.opacity(0.4))
@@ -155,15 +156,15 @@ public struct SessionView: View {
     private var phaseLabel: some View {
         VStack(spacing: SpacingToken.xs) {
             Text(engine.currentPhase.label)
-                .font(TypographyToken.screenTitle)
+                .phaseLabelStyle()
                 .foregroundStyle(ColorToken.primaryText)
+                .phaseTransition(engine.currentPhase)
             Text(verbatim: remainingText)
                 .font(TypographyToken.sectionTitle)
                 .foregroundStyle(ColorToken.secondaryText)
                 .monospacedDigit()
         }
         .accessibilityElement(children: .combine)
-        .slideOnChange(engine.currentPhase, from: .trailing)
     }
 
     private var controls: some View {

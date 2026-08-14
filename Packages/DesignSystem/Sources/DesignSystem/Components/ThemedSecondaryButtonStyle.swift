@@ -1,6 +1,13 @@
 import SwiftUI
 
-/// Secondary capsule button with a transparent background and accent stroke.
+/// Secondary capsule button: accent stroke over a faint accent-tinted fill.
+///
+/// A stroke alone on top of `background` reads as a hairline floating on the
+/// page rather than a tappable control — easy to miss at a glance, which
+/// matters for controls like session pause/skip that sit directly on the
+/// screen background. The soft fill gives it the same "this is a button"
+/// weight as the surface cards without competing with the solid-fill
+/// primary button.
 public struct ThemedSecondaryButtonStyle: ButtonStyle {
     public init() {}
 
@@ -17,7 +24,8 @@ public struct ThemedSecondaryButtonStyle: ButtonStyle {
                 .font(TypographyToken.bodyEmphasized)
                 .foregroundStyle(ColorToken.accent)
                 .frame(maxWidth: .infinity, minHeight: SpacingToken.minTouchTarget)
-                .background(
+                .background(Capsule().fill(ColorToken.accentSoft))
+                .overlay(
                     Capsule()
                         .stroke(ColorToken.accent, lineWidth: 2)
                 )

@@ -80,7 +80,7 @@ public struct ProgressDashboardView: View {
                     .monospacedDigit()
 
                 ProgressView(value: week.progress)
-                    .tint(ColorToken.accent)
+                    .progressViewStyle(.accentBar)
 
                 if week.streakWeeks > 0 {
                     Text("progress.streak \(week.streakWeeks)")
