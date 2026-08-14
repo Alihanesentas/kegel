@@ -17,6 +17,11 @@ public final class SubscriptionStore {
     public private(set) var lastError: SubscriptionError?
 
     private let provider: any SubscriptionProviding
+    /// Set once by ``setSubscriptionBuild()``. When `true`, ``refresh()``
+    /// stops asking `provider` for entitlement state — nothing (a network
+    /// hiccup, a lapsed sandbox receipt, RevenueCat itself) can ever flip
+    /// ``isSubscribed`` back to `false` for the rest of the process.
+    private var isForcedSubscribed = false
 
     public init(provider: any SubscriptionProviding) {
         self.provider = provider
@@ -30,7 +35,17 @@ public final class SubscriptionStore {
     }
 
     public func refresh() async {
+        guard !isForcedSubscribed else { return }
         isSubscribed = await provider.isSubscribed
+    }
+
+    /// Permanently forces this store into a subscribed state, bypassing
+    /// `provider` entirely. Called once from ``AppModel/init`` when
+    /// ``SubscriptionBuildConfiguration/isSubscriptionBuild`` is `true`.
+    /// Never called in a normal build.
+    public func setSubscriptionBuild() {
+        isForcedSubscribed = true
+        isSubscribed = true
     }
 
     public func loadPlans() async {

@@ -6,6 +6,20 @@ options:
   bundleIdPrefix: com.kegel
   generateEmptyDirectories: true
 
+# "Subscription Build" is a third Xcode configuration, alongside the default
+# Debug/Release, that ships with everything unlocked — no paywall, no locked
+# levels. It's for App Store review and demos only, never for a real release.
+# It's release-optimized (`type: release`) so it behaves like what reviewers
+# actually get, just with the entitlement gate compiled out.
+#
+# `SWIFT_ACTIVE_COMPILATION_CONDITIONS` set here is a project-wide setting,
+# so it reaches the local Swift packages (Features, in particular) the same
+# way Debug/Release do — not just the app target.
+configs:
+  Debug: debug
+  Release: release
+  Subscription Build: release
+
 settings:
   base:
     SWIFT_VERSION: 6.0
@@ -13,6 +27,11 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+  configs:
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DEBUG"
+    Subscription Build:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SUBSCRIPTION_BUILD"
 
 packages:
   Core:
@@ -98,3 +117,14 @@ schemes:
       config: Debug
       targets:
         - PelvicApp
+  # Everything unlocked, no paywall — for App Store review and demos.
+  # See the `Subscription Build` config above and
+  # Packages/Features/Sources/Features/Shared/SubscriptionBuildConfiguration.swift.
+  PelvicApp Subscription:
+    build:
+      targets:
+        PelvicApp: all
+    run:
+      config: Subscription Build
+    archive:
+      config: Subscription Build
