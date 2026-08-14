@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "agentSettings": {
+    "autoSelect": true,
+    "contextFiles": [
+      "CLAUDE.md",
+      ".claude/agents/CLAUDE.md",
+      ".claude/agents/README.md"
+    ],
+    "domainConstraints": [
+      "no-health-diagnosis",
+      "core-is-pure-domain",
+      "swift-only",
+      "testing-mandatory",
+      "health-data-on-device"
+    ]
+  },
+  "codeStyle": {
+    "language": "en",
+    "comments": "en",
+    "stringCatalog": "en",
+    "docstrings": "en"
+  },
+  "testing": {
+    "framework": "Swift Testing",
+    "mockingLibrary": "none (protocol injection)",
+    "coverageTarget": "Core package: 80%+",
+    "noSleep": true
+  },
+  "build": {
+    "system": "XcodeGen",
+    "projectFile": "project.yml",
+    "xcodeproj": ".gitignore",
+    "setup": "xcodegen generate"
+  },
+  "permissions": {
+    "read": ["**/*.swift", "**/*.md", "project.yml", ".claude/**"],
+    "write": ["Sources/**", "Tests/**", "Packages/**", "CLAUDE.md", ".claude/**"],
+    "execute": ["xcodegen", "swift", "xcodebuild", "git"]
+  }
+}

@@ -29,18 +29,18 @@ private struct SlideOnChangeModifier<Value: Hashable>: ViewModifier {
 
     private func oppositeEdge(_ edge: Edge) -> Edge {
         switch edge {
-        case .leading: return .trailing
-        case .trailing: return .leading
-        case .top: return .bottom
-        case .bottom: return .top
+        case .leading: .trailing
+        case .trailing: .leading
+        case .top: .bottom
+        case .bottom: .top
         }
     }
 }
 
-extension View {
+public extension View {
     /// Replaces this view with a sliding transition when `value` changes,
     /// falling back to a fade when Reduce Motion is on.
-    public func slideOnChange<Value: Hashable>(_ value: Value, from edge: Edge) -> some View {
+    func slideOnChange<some Value: Hashable>(_ value: Value, from edge: Edge) -> some View {
         modifier(SlideOnChangeModifier(value: value, edge: edge))
     }
 }

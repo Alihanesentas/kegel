@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/qwen3.8-max",
+  "small_model": "opencode/deepseek-v4-flash-free",
+  "instructions": ["CLAUDE.md"],
+  "permission": {
+    "bash": {
+      "git push --force*": "deny",
+      "git push -f*": "deny",
+      "git commit*": "ask",
+      "git push*": "ask",
+      "*": "ask"
+    }
+  }
+}

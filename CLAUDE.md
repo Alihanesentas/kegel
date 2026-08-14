@@ -265,4 +265,33 @@ Her PR'ın karşılaması gereken minimum:
 - Her şeyi tek dosyaya gömme. Yeni bir tip = yeni bir dosya, doğru pakette.
 - `ContentView` diye bir dosya olmayacak. Ekranlar `Features` altında anlamlı isimlerle.
 - Emin olmadığın ürün kararını uydurma — sor.
-- Bölüm 1'deki kısıtlara temas eden bir şey isteniyorsa yazmadan önce uyar.- İş bitince ne yaptığını ve neyi test etmediğini açıkça yaz.
+- Bölüm 1'deki kısıtlara temas eden bir şey isteniyorsa yazmadan önce uyar.
+- İş bitince ne yaptığını ve neyi test etmediğini açıkça yaz.
+
+## 10. Subagent Architecture
+
+**All subagents are auto-configured.** See `.claude/agents/CLAUDE.md` and `.claude/agents/README.md`
+for project-specific rules that guide subagent behavior.
+
+**Key facts:**
+- 158+ global agents available in `~/.claude/agents/` (from awesome-claude-code-subagents)
+- Claude Code auto-selects agents based on task context
+- Every agent reads this root CLAUDE.md + `.claude/agents/CLAUDE.md` for constraints
+- Common mappings: UI work → `frontend-developer` + `ui-designer`, performance → `performance-engineer`, etc.
+
+**Examples:**
+```
+"Add dark mode to Settings" → frontend-developer + ui-designer (auto)
+"Code review this diff" → code-reviewer (auto)
+"Ask the swift-expert: actor isolation patterns" → swift-expert (explicit)
+```
+
+Agents know:
+- Never claim health diagnosis
+- Core = pure domain (no platform imports)
+- RevenueCat behind protocol abstraction
+- Swift Testing mandatory
+- Health data on-device only
+- etc.
+
+For full agent role map and invocation patterns, see `.claude/agents/README.md`.
