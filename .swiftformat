@@ -7,4 +7,4 @@
 --self remove
 --importgrouping testable-last
 --trimwhitespace always
---exclude .build,Packages/*/.build
+--exclude .build,build,Packages/*/.build,Packages/*/build
