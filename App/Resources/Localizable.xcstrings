@@ -1202,6 +1202,38 @@
         }
       }
     },
+    "settings.vibration": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibration"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titreşim"
+          }
+        }
+      }
+    },
+    "settings.vibration.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessions are silent — a haptic marks every phase change. Turn this off for no vibration at all."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seanslar sessizdir — her aşama değişiminde titreşim hissedersiniz. Hiç titreşim istemiyorsanız kapatabilirsiniz."
+          }
+        }
+      }
+    },
     "settings.reminder.time": {
       "localizations": {
         "en": {

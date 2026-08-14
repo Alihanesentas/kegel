@@ -58,6 +58,7 @@ public final class AppModel {
     public func load() async {
         await sessions.load()
         await preferences.load()
+        feedback.setVibrationEnabled(preferences.preferences.isVibrationEnabled)
         // The store needs the anonymous ID before it can report entitlements,
         // so this has to come after preferences are loaded.
         await subscription.configure(anonymousID: preferences.preferences.anonymousID)
@@ -145,6 +146,13 @@ public final class AppModel {
     public func setReminder(hour: Int?, minute: Int?) async {
         await preferences.update { $0.setReminder(hour: hour, minute: minute) }
         await scheduleReminder()
+    }
+
+    /// Turns the session's haptic cues on or off. Sessions carry no other
+    /// feedback, so this is the app's only mute switch.
+    public func setVibrationEnabled(_ enabled: Bool) async {
+        await preferences.update { $0.isVibrationEnabled = enabled }
+        feedback.setVibrationEnabled(enabled)
     }
 
     public func record(_ record: SessionRecord) async {

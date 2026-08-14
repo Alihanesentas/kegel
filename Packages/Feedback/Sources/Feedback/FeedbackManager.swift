@@ -1,17 +1,19 @@
-import AVFoundation
 import Core
 import CoreHaptics
 import Foundation
 
 /// Concrete `FeedbackEmitting`. The only place in the app that talks to
-/// CoreHaptics / AVSpeechSynthesizer / AVAudioSession directly — `Core` and
-/// everything above `Feedback` only ever see the protocol.
+/// CoreHaptics directly — `Core` and everything above `Feedback` only ever
+/// see the protocol.
+///
+/// Sessions are silent by design: no spoken phase names, no audio cues.
+/// Every phase change and countdown tick is a distinct haptic pattern
+/// instead, toggleable in Settings via ``setVibrationEnabled(_:)``.
 public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
-    private let synthesizer = AVSpeechSynthesizer()
     private var hapticEngine: CHHapticEngine?
+    private var isVibrationEnabled = true
 
     public init() {
-        configureAudioSession()
         prepareHapticEngine()
     }
 
@@ -21,22 +23,14 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
 
     public func cue(for phase: Phase, duration _: Double) {
         playHaptic(for: phase)
-        speak(phase.localizationKey)
     }
 
     public func countdownTick() {
         playTransientHaptic(intensity: 0.6, sharpness: 0.4)
     }
 
-    // MARK: Audio session
-
-    private func configureAudioSession() {
-        #if os(iOS)
-            let session = AVAudioSession.sharedInstance()
-            // Never take over the user's music — mix in and duck instead of interrupting.
-            try? session.setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
-            try? session.setActive(true)
-        #endif
+    public func setVibrationEnabled(_ enabled: Bool) {
+        isVibrationEnabled = enabled
     }
 
     // MARK: Haptics
@@ -46,16 +40,22 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
         hapticEngine = try? CHHapticEngine()
     }
 
+    /// Every phase gets its own pattern so the user can tell them apart by
+    /// feel alone — this is the only feedback a session gives now.
     private func playHaptic(for phase: Phase) {
         switch phase {
+        case .prepare:
+            playTransientHaptic(intensity: 0.3, sharpness: 0.2)
         case .contract:
             playTransientHaptic(intensity: 1.0, sharpness: 0.8)
         case .hold:
             playContinuousHaptic(intensity: 0.5, sharpness: 0.3, duration: 0.3)
         case .relax:
             playTransientHaptic(intensity: 0.4, sharpness: 0.2)
-        case .prepare, .rest, .finished:
-            break
+        case .rest:
+            playTransientHaptic(intensity: 0.3, sharpness: 0.1)
+        case .finished:
+            playContinuousHaptic(intensity: 0.8, sharpness: 0.5, duration: 0.5)
         }
     }
 
@@ -85,17 +85,10 @@ public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
     }
 
     private func play(events: [CHHapticEvent]) {
-        guard let hapticEngine,
+        guard isVibrationEnabled,
+              let hapticEngine,
               let pattern = try? CHHapticPattern(events: events, parameters: []),
               let player = try? hapticEngine.makePlayer(with: pattern) else { return }
         try? player.start(atTime: CHHapticTimeImmediate)
-    }
-
-    // MARK: Speech
-
-    private func speak(_ localizationKey: String) {
-        let text = String(localized: String.LocalizationValue(localizationKey), bundle: .module)
-        let utterance = AVSpeechUtterance(string: text)
-        synthesizer.speak(utterance)
     }
 }

@@ -21,6 +21,8 @@ public struct SettingsView: View {
     /// Guards against the initial sync writing preferences straight back.
     @State private var hasLoadedReminder = false
 
+    @State private var vibrationOn = true
+
     public init() {}
 
     public var body: some View {
@@ -28,13 +30,20 @@ public struct SettingsView: View {
             Form {
                 subscriptionSection
                 reminderSection
+                feedbackSection
                 aboutSection
                 supportSection
             }
             .navigationTitle("settings.title")
-            .task { syncReminderFromPreferences() }
+            .task {
+                syncReminderFromPreferences()
+                vibrationOn = model.preferences.preferences.isVibrationEnabled
+            }
             .onChange(of: remindersOn) { _, _ in persistReminder() }
             .onChange(of: reminderTime) { _, _ in persistReminder() }
+            .onChange(of: vibrationOn) { _, newValue in
+                Task { await model.setVibrationEnabled(newValue) }
+            }
             .sheet(isPresented: $showHealthNotice) {
                 sheet { HealthNoticeView() }
             }
@@ -82,6 +91,15 @@ public struct SettingsView: View {
                 )
                 .frame(minHeight: SpacingToken.minTouchTarget)
             }
+        }
+    }
+
+    private var feedbackSection: some View {
+        Section {
+            Toggle("settings.vibration", isOn: $vibrationOn)
+                .frame(minHeight: SpacingToken.minTouchTarget)
+        } footer: {
+            Text("settings.vibration.footer")
         }
     }
 

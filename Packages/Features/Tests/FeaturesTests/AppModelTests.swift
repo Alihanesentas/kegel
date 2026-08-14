@@ -98,6 +98,17 @@ private final class RecordingNotifications: NotificationScheduling, @unchecked S
     }
 }
 
+private final class RecordingFeedback: FeedbackEmitting, @unchecked Sendable {
+    private(set) var vibrationEnabledCalls: [Bool] = []
+
+    func prepare() {}
+    func cue(for _: Phase, duration _: Double) {}
+    func countdownTick() {}
+    func setVibrationEnabled(_ enabled: Bool) {
+        vibrationEnabledCalls.append(enabled)
+    }
+}
+
 private func makeGuide() -> MuscleGuide {
     MuscleGuide(
         title: LocalizedText(["en": "Guide"]),
@@ -134,6 +145,7 @@ private func makeModel(
     content: ContentSchema = makeContent(),
     analytics: RecordingAnalytics = RecordingAnalytics(),
     notifications: RecordingNotifications = RecordingNotifications(),
+    feedback: any FeedbackEmitting = NoOpFeedback(),
     contentRefresh: (@Sendable () async -> ContentSchema?)? = nil
 ) async -> AppModel {
     let model = AppModel(
@@ -141,7 +153,7 @@ private func makeModel(
         sessions: SessionStore(repository: InMemoryRepository(history)),
         preferences: PreferencesStore(store: InMemoryStore(preferences)),
         subscription: SubscriptionStore(provider: subscription),
-        feedback: NoOpFeedback(),
+        feedback: feedback,
         analytics: analytics,
         notifications: notifications,
         contentRefresh: contentRefresh
@@ -329,6 +341,35 @@ struct ReminderTests {
         #expect(notifications.scheduled.isEmpty)
         // The preference is still saved — permission can be granted later.
         #expect(model.preferences.preferences.reminderHour == 8)
+    }
+}
+
+@MainActor
+struct VibrationSettingTests {
+    /// Sessions carry no other feedback, so this is loaded and applied as
+    /// soon as the model is ready — not only when the user touches Settings.
+    @Test func vibrationPreferenceIsAppliedToFeedbackOnLaunch() async {
+        let feedback = RecordingFeedback()
+        _ = await makeModel(
+            preferences: UserPreferences(isVibrationEnabled: false),
+            feedback: feedback
+        )
+
+        #expect(feedback.vibrationEnabledCalls == [false])
+    }
+
+    @Test func togglingVibrationPersistsAndAppliesImmediately() async {
+        let feedback = RecordingFeedback()
+        let model = await makeModel(feedback: feedback)
+
+        await model.setVibrationEnabled(false)
+
+        #expect(!model.preferences.preferences.isVibrationEnabled)
+        #expect(feedback.vibrationEnabledCalls.last == false)
+
+        await model.setVibrationEnabled(true)
+        #expect(model.preferences.preferences.isVibrationEnabled)
+        #expect(feedback.vibrationEnabledCalls.last == true)
     }
 }
 
