@@ -17,7 +17,8 @@ public actor JSONFileStore<Value: Codable & Sendable>: ValueStore {
 
     public func load() async -> Value {
         guard let data = try? Data(contentsOf: fileURL),
-              let decoded = try? JSONDecoder().decode(Value.self, from: data) else {
+              let decoded = try? JSONDecoder().decode(Value.self, from: data)
+        else {
             return defaultValue()
         }
         return decoded

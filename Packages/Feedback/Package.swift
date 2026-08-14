@@ -10,10 +10,10 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "Feedback", targets: ["Feedback"])
+        .library(name: "Feedback", targets: ["Feedback"]),
     ],
     dependencies: [
-        .package(path: "../Core")
+        .package(path: "../Core"),
     ],
     targets: [
         .target(
@@ -21,7 +21,7 @@ let package = Package(
             dependencies: ["Core"],
             resources: [.process("Resources/Localizable.xcstrings")]
         ),
-        .testTarget(name: "FeedbackTests", dependencies: ["Feedback"])
+        .testTarget(name: "FeedbackTests", dependencies: ["Feedback"]),
     ],
     swiftLanguageModes: [.v6]
 )

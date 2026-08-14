@@ -20,7 +20,7 @@ public final class SessionStore {
     }
 
     public func load() async {
-        records = (try? await repository.loadAll()) ?? []
+        records = await (try? repository.loadAll()) ?? []
         isLoaded = true
     }
 

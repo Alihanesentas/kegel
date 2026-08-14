@@ -9,7 +9,6 @@ import RevenueCat
 /// to a server we don't have. This buys that instead of us building it
 /// (CLAUDE.md section 2).
 public actor RevenueCatSubscriptionProvider: SubscriptionProviding {
-
     /// Entitlement identifier configured in the RevenueCat dashboard. Every
     /// paid plan must grant this one entitlement — the app only ever asks
     /// "is it active", never "which product did they buy".
@@ -41,7 +40,8 @@ public actor RevenueCatSubscriptionProvider: SubscriptionProviding {
     public func availablePlans() async -> [SubscriptionPlan] {
         guard isConfigured,
               let offerings = try? await Purchases.shared.offerings(),
-              let current = offerings.current else {
+              let current = offerings.current
+        else {
             return []
         }
 
@@ -58,7 +58,9 @@ public actor RevenueCatSubscriptionProvider: SubscriptionProviding {
 
         do {
             let result = try await Purchases.shared.purchase(package: package)
-            if result.userCancelled { throw SubscriptionError.cancelled }
+            if result.userCancelled {
+                throw SubscriptionError.cancelled
+            }
         } catch let error as SubscriptionError {
             throw error
         } catch {

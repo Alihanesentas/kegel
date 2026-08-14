@@ -18,5 +18,5 @@ public protocol AnalyticsTracking: Sendable {
 /// Placeholder until a real analytics SDK is wired in behind this protocol — M5 work.
 public struct NoOpAnalyticsTracker: AnalyticsTracking {
     public init() {}
-    public func track(_ event: AnalyticsEvent) {}
+    public func track(_: AnalyticsEvent) {}
 }

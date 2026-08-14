@@ -47,7 +47,7 @@ func makeContent(
         schemaVersion: schemaVersion,
         freeLevelLimit: freeLevelLimit,
         weeklySessionGoal: weeklySessionGoal,
-        levels: (1...levelCount).map { makeLevel(id: $0) },
+        levels: (1 ... levelCount).map { makeLevel(id: $0) },
         muscleGuide: makeGuide(),
         lockedFeatures: lockedFeatures
     )

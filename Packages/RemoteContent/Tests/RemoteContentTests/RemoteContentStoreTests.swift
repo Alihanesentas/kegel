@@ -8,8 +8,13 @@ private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var responseData: Data?
     nonisolated(unsafe) static var shouldFail = false
 
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override class func canInit(with _: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
 
     override func startLoading() {
         if Self.shouldFail {
@@ -78,7 +83,6 @@ private func writeCache(_ data: Data, to url: URL) throws {
 /// each other's canned response.
 @Suite(.serialized)
 struct RemoteContentStoreTests {
-
     // MARK: Reading what's already on disk
 
     @Test func fallsBackToEmbeddedWhenNoCacheExists() async {
@@ -106,11 +110,12 @@ struct RemoteContentStoreTests {
     }
 
     // MARK: Refreshing from the network
+
     //
     // CLAUDE.md section 5: a newer valid version wins, anything else is
     // silently ignored and the app keeps what it had.
 
-    @Test func newerRemoteVersionIsCachedAndUsed() async throws {
+    @Test func newerRemoteVersionIsCachedAndUsed() async {
         let url = tempCacheURL()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
 
@@ -124,7 +129,7 @@ struct RemoteContentStoreTests {
         #expect(await store.currentContent().schemaVersion == newerVersion)
     }
 
-    @Test func olderRemoteVersionIsIgnored() async throws {
+    @Test func olderRemoteVersionIsIgnored() async {
         let url = tempCacheURL()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
 
@@ -140,7 +145,7 @@ struct RemoteContentStoreTests {
     }
 
     /// The headline requirement: publishing a broken file must not break the app.
-    @Test func invalidRemoteContentIsSilentlyIgnored() async throws {
+    @Test func invalidRemoteContentIsSilentlyIgnored() async {
         let url = tempCacheURL()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
 

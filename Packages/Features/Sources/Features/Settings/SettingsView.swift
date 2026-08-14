@@ -140,7 +140,7 @@ public struct SettingsView: View {
         }
     }
 
-    private func sheet<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    private func sheet(@ViewBuilder content: () -> some View) -> some View {
         NavigationStack {
             ScrollView {
                 content()

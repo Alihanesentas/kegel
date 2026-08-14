@@ -24,12 +24,15 @@ public struct OnboardingView: View {
     public var body: some View {
         ScrollView {
             VStack(spacing: SpacingToken.lg) {
-                switch step {
-                case .disclaimer: HealthNoticeView(onContinue: advance)
-                case .muscleGuide: MuscleGuideView(guide: model.content.muscleGuide, onContinue: advance)
-                case .goal: goalStep
-                case .reminder: reminderStep
+                Group {
+                    switch step {
+                    case .disclaimer: HealthNoticeView(onContinue: advance)
+                    case .muscleGuide: MuscleGuideView(guide: model.content.muscleGuide, onContinue: advance)
+                    case .goal: goalStep
+                    case .reminder: reminderStep
+                    }
                 }
+                .slideOnChange(step, from: .trailing)
             }
             .padding(SpacingToken.lg)
             .frame(maxWidth: .infinity, alignment: .leading)

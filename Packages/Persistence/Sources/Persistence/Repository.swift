@@ -1,6 +1,6 @@
-/// Storage abstractions so the app never talks to `FileManager`/JSON directly.
-/// Per CLAUDE.md section 2: `Codable` + JSON file behind these protocols, no
-/// SwiftData. Swapping the storage mechanism later is a single-file change.
+// Storage abstractions so the app never talks to `FileManager`/JSON directly.
+// Per CLAUDE.md section 2: `Codable` + JSON file behind these protocols, no
+// SwiftData. Swapping the storage mechanism later is a single-file change.
 
 /// A collection of items, e.g. session history.
 public protocol Repository<Item>: Sendable {
