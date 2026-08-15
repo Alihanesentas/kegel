@@ -2,6 +2,7 @@ import Core
 import Testing
 @testable import Feedback
 
+@MainActor
 struct FeedbackManagerTests {
     /// CoreHaptics behavior needs real hardware or a simulator to verify
     /// meaningfully — not available in this environment. This only checks
