@@ -17,16 +17,16 @@ actor MockSubscriptionProvider: SubscriptionProviding {
     var isSubscribed = false
     var availablePlansMock: [SubscriptionPlan] = [
         SubscriptionPlan(
-            identifier: "pro_monthly",
-            displayName: "Pro Monthly",
-            price: 9.99,
-            currencyCode: "USD"
+            id: "pro_monthly",
+            period: .monthly,
+            localizedPrice: "$9.99",
+            localizedMonthlyEquivalent: "$9.99"
         ),
         SubscriptionPlan(
-            identifier: "pro_annual",
-            displayName: "Pro Annual",
-            price: 79.99,
-            currencyCode: "USD"
+            id: "pro_annual",
+            period: .yearly,
+            localizedPrice: "$79.99",
+            localizedMonthlyEquivalent: "$6.67"
         ),
     ]
 

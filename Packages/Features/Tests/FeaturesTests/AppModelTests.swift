@@ -47,6 +47,11 @@ private final class StubSubscription: SubscriptionProviding, @unchecked Sendable
     private(set) var configuredID: String?
     private(set) var purchased: [String] = []
 
+    var shouldFailLoadPlans = false
+    var shouldFailPurchase = false
+    var loadPlansError: Error?
+    var purchaseError: Error?
+
     init(subscribed: Bool = false, plans: [SubscriptionPlan] = []) {
         self.subscribed = subscribed
         self.plans = plans
@@ -60,11 +65,17 @@ private final class StubSubscription: SubscriptionProviding, @unchecked Sendable
         configuredID = anonymousID
     }
 
-    func availablePlans() async -> [SubscriptionPlan] {
-        plans
+    func availablePlans() async throws -> [SubscriptionPlan] {
+        if shouldFailLoadPlans {
+            throw loadPlansError ?? SubscriptionError.failed("Plans load failed")
+        }
+        return plans
     }
 
     func purchase(_ plan: SubscriptionPlan) async throws {
+        if shouldFailPurchase {
+            throw purchaseError ?? SubscriptionError.failed("Purchase failed")
+        }
         purchased.append(plan.id)
     }
 
@@ -504,9 +515,36 @@ struct PurchaseFlowTests {
     @Test func purchaseErrorIsRecordedButDoesNotUnlock() async {
         let plan = SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
         let subscription = StubSubscription(plans: [plan])
+        subscription.shouldFailPurchase = true
+        subscription.purchaseError = SubscriptionError.failed("Network error")
         let model = await makeModel(subscription: subscription)
 
         #expect(!model.subscription.isSubscribed)
+
+        await model.subscription.purchase(plan)
+
+        #expect(!model.subscription.isSubscribed)
+        #expect(model.subscription.lastError != nil)
+    }
+
+    @Test func loadPlansNetworkErrorIsRecorded() async {
+        let subscription = StubSubscription()
+        subscription.shouldFailLoadPlans = true
+        subscription.loadPlansError = SubscriptionError.failed("Network unreachable")
+        let model = await makeModel(subscription: subscription)
+
+        await model.subscription.loadPlans()
+
+        #expect(model.subscription.lastError != nil)
+        #expect(model.subscription.plans.isEmpty)
+    }
+
+    @Test func purchaseCancelledByUserIsNotRecordedAsError() async {
+        let plan = SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
+        let subscription = StubSubscription(plans: [plan])
+        subscription.shouldFailPurchase = true
+        subscription.purchaseError = SubscriptionError.cancelled
+        let model = await makeModel(subscription: subscription)
 
         await model.subscription.purchase(plan)
 

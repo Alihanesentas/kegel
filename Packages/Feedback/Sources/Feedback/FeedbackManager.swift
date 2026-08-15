@@ -9,7 +9,8 @@ import Foundation
 /// Sessions are silent by design: no spoken phase names, no audio cues.
 /// Every phase change and countdown tick is a distinct haptic pattern
 /// instead, toggleable in Settings via ``setVibrationEnabled(_:)``.
-public final class FeedbackManager: FeedbackEmitting, @unchecked Sendable {
+@MainActor
+public final class FeedbackManager: FeedbackEmitting {
     private var hapticEngine: CHHapticEngine?
     private var isVibrationEnabled = true
 
