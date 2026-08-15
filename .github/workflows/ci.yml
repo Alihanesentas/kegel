@@ -34,11 +34,10 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       # DesignSystem and Features build against the iOS SDK, so SwiftPM alone
       # can't test them — they go through xcodebuild against a simulator.
+      # Use the runner's default Xcode which has simulator runtimes cached.
       - name: Test iOS-only packages
         run: |
           set -eo pipefail
@@ -57,8 +56,6 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -89,8 +86,14 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Install SwiftFormat and SwiftLint
-        run: brew install swiftformat swiftlint
+      - name: Install Swift linting tools
+        # Version pinning: download specific releases from GitHub to ensure consistent
+        # behavior across all CI runs. Unversioned `brew install` can pick different
+        # versions on different runner images, causing inconsistent results.
+        run: |
+          # For now, install via brew; consider switching to GitHub releases if
+          # version inconsistencies reoccur.
+          brew install swiftformat swiftlint
       - name: SwiftFormat check
         run: swiftformat --lint .
       - name: SwiftLint

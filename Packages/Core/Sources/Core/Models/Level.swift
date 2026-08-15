@@ -55,7 +55,7 @@ public struct Level: Identifiable, Codable, Hashable, Sendable {
     /// Expands the level into a flat step list. The engine only ever executes this list.
     public func buildSteps() -> [WorkoutStep] {
         var steps: [WorkoutStep] = [
-            WorkoutStep(phase: .prepare, duration: prepare, repIndex: nil, setIndex: nil),
+            WorkoutStep(phase: .prepare, duration: prepare, repIndex: nil, setIndex: nil)
         ]
 
         for set in 1 ... sets {

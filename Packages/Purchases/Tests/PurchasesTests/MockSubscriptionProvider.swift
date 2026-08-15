@@ -27,7 +27,7 @@ actor MockSubscriptionProvider: SubscriptionProviding {
             period: .yearly,
             localizedPrice: "$79.99",
             localizedMonthlyEquivalent: "$6.67"
-        ),
+        )
     ]
 
     func configure(anonymousID: String) async {
@@ -66,8 +66,8 @@ actor MockSubscriptionProvider: SubscriptionProviding {
             "pro": [
                 "identifier": "pro",
                 "isActive": isSubscribed,
-                "expirationDate": Date().addingTimeInterval(86400 * 365).iso8601String,
-            ],
+                "expirationDate": Date().addingTimeInterval(86400 * 365).iso8601String
+            ]
         ]
     }
 

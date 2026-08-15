@@ -115,7 +115,7 @@ struct SubscriptionWiringTests {
     @Test func plansAreLoadedFromTheProvider() async {
         let plans = [
             SubscriptionPlan(id: "yearly", period: .yearly, localizedPrice: "$39.99"),
-            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99"),
+            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99")
         ]
         let model = await makeModel(subscription: StubSubscription(plans: plans))
 

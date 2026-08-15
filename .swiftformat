@@ -4,6 +4,7 @@
 --wraparguments before-first
 --wrapparameters before-first
 --wrapcollections before-first
+--commas inline
 --self remove
 --importgrouping testable-last
 --trimwhitespace always

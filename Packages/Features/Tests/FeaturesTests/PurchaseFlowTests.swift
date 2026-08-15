@@ -8,7 +8,7 @@ struct PurchaseFlowTests {
     /// RevenueCat validates → subscription state updates → paywall closes.
     @Test func successfulPurchaseUnlocksSubscribedFeatures() async {
         let subscription = StubSubscription(plans: [
-            SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99"),
+            SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
         ])
         var model = await makeModel(subscription: subscription)
 
@@ -27,7 +27,7 @@ struct PurchaseFlowTests {
     /// User cancels the StoreKit dialog — no error, no state change.
     @Test func cancelledPurchaseDoesNotChangeState() async {
         let subscription = StubSubscription(plans: [
-            SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99"),
+            SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
         ])
         let model = await makeModel(subscription: subscription)
 

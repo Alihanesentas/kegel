@@ -65,7 +65,7 @@ public final class FeedbackManager: FeedbackEmitting {
             eventType: .hapticTransient,
             parameters: [
                 CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
             ],
             relativeTime: 0
         )
@@ -77,7 +77,7 @@ public final class FeedbackManager: FeedbackEmitting {
             eventType: .hapticContinuous,
             parameters: [
                 CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
+                CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
             ],
             relativeTime: 0,
             duration: duration

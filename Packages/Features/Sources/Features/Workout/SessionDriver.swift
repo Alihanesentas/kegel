@@ -36,7 +36,11 @@ public final class SessionDriver {
     }
 
     public func togglePause() {
-        engine.state == .running ? pause() : resume()
+        if engine.state == .running {
+            pause()
+        } else {
+            resume()
+        }
     }
 
     public func skip() {
