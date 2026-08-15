@@ -8,11 +8,11 @@ private final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var responseData: Data?
     nonisolated(unsafe) static var shouldFail = false
 
-    override class func canInit(with _: URLRequest) -> Bool {
+    override static func canInit(with _: URLRequest) -> Bool {
         true
     }
 
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+    override static func canonicalRequest(for request: URLRequest) -> URLRequest {
         request
     }
 

@@ -7,7 +7,7 @@ let package = Package(
     // (idle timer, haptics). Verified by building the app in Xcode.
     platforms: [.iOS(.v17)],
     products: [
-        .library(name: "Features", targets: ["Features"]),
+        .library(name: "Features", targets: ["Features"])
     ],
     dependencies: [
         .package(path: "../Core"),
@@ -15,7 +15,7 @@ let package = Package(
         .package(path: "../Persistence"),
         .package(path: "../Purchases"),
         .package(path: "../Notifications"),
-        .package(path: "../Analytics"),
+        .package(path: "../Analytics")
     ],
     targets: [
         // The String Catalog deliberately lives in the app target, not here.
@@ -32,7 +32,7 @@ let package = Package(
         .testTarget(
             name: "FeaturesTests",
             dependencies: ["Features", "Core", "Persistence", "Purchases", "Notifications", "Analytics"]
-        ),
+        )
     ],
     swiftLanguageModes: [.v6]
 )

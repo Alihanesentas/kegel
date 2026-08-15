@@ -5,13 +5,31 @@ import Foundation
 /// Kept in one place so it's obvious what still needs filling in before the
 /// app can ship, rather than having placeholders scattered through the code.
 enum AppConfiguration {
-    /// RevenueCat public SDK key.
+    /// RevenueCat public SDK key for real purchase validation.
     ///
-    /// Read from the Info.plist so it isn't committed and can differ per
-    /// build configuration. Set `REVENUECAT_API_KEY` in the build settings.
-    /// While it's empty the app falls back to `NoOpSubscriptionProvider`,
-    /// which offers nothing to buy — that's deliberate: a paywall with a dead
-    /// button is an App Store rejection (Guideline 2.1).
+    /// **What it is:**
+    /// A public SDK key from RevenueCat (https://app.revenuecat.io) that allows
+    /// the app to validate App Store receipts and manage subscriptions.
+    /// Format: `appl_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+    ///
+    /// **Security note:**
+    /// This is a PUBLIC SDK key (safe to commit), not a Secret key (server-only).
+    /// It's read from Info.plist to allow different keys per build configuration.
+    ///
+    /// **Deployment:**
+    /// 1. Create account at https://app.revenuecat.io
+    /// 2. Set up iOS app in RevenueCat dashboard
+    /// 3. Go to Settings → Projects → Your Project → API Keys
+    /// 4. Copy the iOS API key (starts with `appl_`)
+    /// 5. Set REVENUECAT_API_KEY in build settings:
+    ///    - Via CI/CD secret: `export REVENUECAT_API_KEY=appl_xxx`
+    ///    - Via Config/Secrets.xcconfig (gitignored): `REVENUECAT_API_KEY = appl_xxx`
+    ///    - Via project.yml build settings
+    /// 6. Build and run — purchases will now work
+    ///
+    /// **Current state:**
+    /// If empty, app falls back to `NoOpSubscriptionProvider` (no purchases).
+    /// This prevents App Store rejection (Guideline 2.1: no dead buttons).
     static var revenueCatAPIKey: String {
         let value = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String
         return value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""

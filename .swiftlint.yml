@@ -13,6 +13,18 @@ disabled_rules:
 # literals (inline JSON, fixture URLs) — turning it on would fail the build
 # over noise rather than over risk.
 
+# Design system spacing tokens use abbreviated names (xs, sm, md, lg, xl) — a
+# well-established convention in design systems. Exclude these from identifier_name.
+# Also exclude common model properties like 'id'.
+identifier_name:
+  excluded:
+    - xs
+    - sm
+    - md
+    - lg
+    - xl
+    - id
+
 line_length:
   warning: 120
   error: 160

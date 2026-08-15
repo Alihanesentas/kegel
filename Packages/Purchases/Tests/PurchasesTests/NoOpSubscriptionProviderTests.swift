@@ -10,8 +10,9 @@ struct NoOpSubscriptionProviderTests {
         #expect(await NoOpSubscriptionProvider().isSubscribed == false)
     }
 
-    @Test func offersNothingToBuy() async {
-        #expect(await NoOpSubscriptionProvider().availablePlans().isEmpty)
+    @Test func offersNothingToBuy() async throws {
+        let plans = try await NoOpSubscriptionProvider().availablePlans()
+        #expect(plans.isEmpty)
     }
 
     @Test func purchaseAndRestoreDoNotThrow() async throws {

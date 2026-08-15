@@ -4,6 +4,8 @@
 --wraparguments before-first
 --wrapparameters before-first
 --wrapcollections before-first
+--commas inline
+--disable wrapMultilineStatementBraces
 --self remove
 --importgrouping testable-last
 --trimwhitespace always

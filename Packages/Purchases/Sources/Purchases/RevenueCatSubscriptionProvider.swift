@@ -37,12 +37,14 @@ public actor RevenueCatSubscriptionProvider: SubscriptionProviding {
         }
     }
 
-    public func availablePlans() async -> [SubscriptionPlan] {
-        guard isConfigured,
-              let offerings = try? await Purchases.shared.offerings(),
-              let current = offerings.current
-        else {
-            return []
+    public func availablePlans() async throws -> [SubscriptionPlan] {
+        guard isConfigured else {
+            throw SubscriptionError.notConfigured
+        }
+
+        let offerings = try await Purchases.shared.offerings()
+        guard let current = offerings.current else {
+            throw SubscriptionError.failed("No current offering available")
         }
 
         let plans = current.availablePackages.compactMap(Self.plan(from:))

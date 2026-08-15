@@ -43,11 +43,22 @@ public final class AppModel {
         self.analytics = analytics
         self.notifications = notifications
         self.contentRefresh = contentRefresh
+
+        // "Subscription Build" (see SubscriptionBuildConfiguration.swift): a
+        // compile-time-only configuration used for App Store review and
+        // demos, where every level and paid feature must be reachable and no
+        // paywall ever appears. `setSubscriptionBuild()` also stops later
+        // calls to `subscription.configure(anonymousID:)` in `load()` from
+        // overwriting this with the real (unsubscribed) entitlement state.
+        if SubscriptionBuildConfiguration.isSubscriptionBuild {
+            subscription.setSubscriptionBuild()
+        }
     }
 
     public func load() async {
         await sessions.load()
         await preferences.load()
+        feedback.setVibrationEnabled(preferences.preferences.isVibrationEnabled)
         // The store needs the anonymous ID before it can report entitlements,
         // so this has to come after preferences are loaded.
         await subscription.configure(anonymousID: preferences.preferences.anonymousID)
@@ -64,14 +75,28 @@ public final class AppModel {
 
     /// A level is playable when it's within the free tier or the user subscribes.
     /// Progress never locks a level — CLAUDE.md section 5.
+    ///
+    /// In a "Subscription Build" this returns `true` unconditionally,
+    /// resolved entirely at compile time — see
+    /// `SubscriptionBuildConfiguration.swift`.
     public func isUnlocked(levelID: Int) -> Bool {
-        content.isFree(levelID: levelID) || subscription.isSubscribed
+        if SubscriptionBuildConfiguration.isSubscriptionBuild {
+            return true
+        }
+        return content.isFree(levelID: levelID) || subscription.isSubscribed
     }
 
     /// Whether a paid feature is available right now. Which features are paid
     /// comes from `content.json`, not from code (CLAUDE.md section 6).
+    ///
+    /// In a "Subscription Build" this returns `true` unconditionally,
+    /// resolved entirely at compile time — see
+    /// `SubscriptionBuildConfiguration.swift`.
     public func isUnlocked(_ feature: PaidFeature) -> Bool {
-        !content.requiresSubscription(feature) || subscription.isSubscribed
+        if SubscriptionBuildConfiguration.isSubscriptionBuild {
+            return true
+        }
+        return !content.requiresSubscription(feature) || subscription.isSubscribed
     }
 
     public func makeEngine(for level: Level) -> WorkoutEngine {
@@ -125,6 +150,13 @@ public final class AppModel {
     public func setReminder(hour: Int?, minute: Int?) async {
         await preferences.update { $0.setReminder(hour: hour, minute: minute) }
         await scheduleReminder()
+    }
+
+    /// Turns the session's haptic cues on or off. Sessions carry no other
+    /// feedback, so this is the app's only mute switch.
+    public func setVibrationEnabled(_ enabled: Bool) async {
+        await preferences.update { $0.isVibrationEnabled = enabled }
+        feedback.setVibrationEnabled(enabled)
     }
 
     public func record(_ record: SessionRecord) async {

@@ -80,7 +80,7 @@ public struct ProgressDashboardView: View {
                     .monospacedDigit()
 
                 ProgressView(value: week.progress)
-                    .tint(ColorToken.accent)
+                    .progressViewStyle(.accentBar)
 
                 if week.streakWeeks > 0 {
                     Text("progress.streak \(week.streakWeeks)")
@@ -103,8 +103,7 @@ public struct ProgressDashboardView: View {
                 statRow("progress.totalReps", value: "\(records.totalReps)")
                 statRow("progress.bestReps", value: "\(records.mostRepsInASession)")
                 if let highest = records.highestCompletedLevelID,
-                   let level = model.content.level(id: highest)
-                {
+                   let level = model.content.level(id: highest) {
                     statRow("progress.highestLevel", value: level.title.resolved())
                 }
             }

@@ -1,0 +1,15 @@
+{
+  "originHash" : "336f73592783738aa086351340a501d0408b4d45a558b84d6968b487641ed80b",
+  "pins" : [
+    {
+      "identity" : "purchases-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios.git",
+      "state" : {
+        "revision" : "3d036d836a93872895f84065fabe580c3f2e2a23",
+        "version" : "5.83.1"
+      }
+    }
+  ],
+  "version" : 3
+}

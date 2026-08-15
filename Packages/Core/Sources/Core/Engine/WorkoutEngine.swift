@@ -135,7 +135,11 @@ public final class WorkoutEngine {
     }
 
     public func togglePause() {
-        state == .running ? pause() : resume()
+        if state == .running {
+            pause()
+        } else {
+            resume()
+        }
     }
 
     /// Ends the session and returns the engine to `.idle`. A session that

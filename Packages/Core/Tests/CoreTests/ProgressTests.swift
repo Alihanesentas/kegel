@@ -12,7 +12,7 @@ struct ProgressionRuleTests {
     @Test func recommendsTheLevelAfterTheHighestCompletedOne() {
         let records = [
             makeRecord(date: date("2026-01-05T10:00:00Z"), levelID: 1),
-            makeRecord(date: date("2026-01-06T10:00:00Z"), levelID: 3),
+            makeRecord(date: date("2026-01-06T10:00:00Z"), levelID: 3)
         ]
         #expect(ProgressionRule.recommendedLevelID(from: records, in: content) == 4)
     }
@@ -48,7 +48,7 @@ struct PersonalRecordsTests {
             makeRecord(
                 date: date("2026-01-07T10:00:00Z"), levelID: 4,
                 completedReps: 5, duration: 30, wasCompleted: false
-            ),
+            )
         ]
 
         let records = PersonalRecords(records: history)
@@ -75,7 +75,7 @@ struct WeeklySummaryTests {
         let result = summary([
             makeRecord(date: date("2026-01-05T08:00:00Z")),
             makeRecord(date: date("2026-01-07T08:00:00Z")),
-            makeRecord(date: date("2026-01-02T08:00:00Z")), // previous week
+            makeRecord(date: date("2026-01-02T08:00:00Z")) // previous week
         ])
 
         #expect(result.sessionsThisWeek == 2)

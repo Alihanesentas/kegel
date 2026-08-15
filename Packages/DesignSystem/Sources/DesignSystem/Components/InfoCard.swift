@@ -34,12 +34,17 @@ public struct InfoCard: View {
         .padding(SpacingToken.md)
         .background(ColorToken.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(ColorToken.cardBorder, lineWidth: 1)
+        }
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2, style: .continuous)
                 .fill(ColorToken.accent)
                 .frame(width: 4)
                 .padding(.vertical, SpacingToken.md)
         }
+        .cardElevation()
         .accessibilityElement(children: .combine)
     }
 }

@@ -6,6 +6,20 @@ options:
   bundleIdPrefix: com.kegel
   generateEmptyDirectories: true
 
+# "Subscription Build" is a third Xcode configuration, alongside the default
+# Debug/Release, that ships with everything unlocked — no paywall, no locked
+# levels. It's for App Store review and demos only, never for a real release.
+# It's release-optimized (`type: release`) so it behaves like what reviewers
+# actually get, just with the entitlement gate compiled out.
+#
+# `SWIFT_ACTIVE_COMPILATION_CONDITIONS` set here is a project-wide setting,
+# so it reaches the local Swift packages (Features, in particular) the same
+# way Debug/Release do — not just the app target.
+configs:
+  Debug: debug
+  Release: release
+  Subscription Build: release
+
 settings:
   base:
     SWIFT_VERSION: 6.0
@@ -13,6 +27,11 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+  configs:
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DEBUG"
+    Subscription Build:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SUBSCRIPTION_BUILD"
 
 packages:
   Core:
@@ -47,6 +66,7 @@ targets:
       - path: App
         excludes:
           - Info.plist
+      - path: App/Assets.xcassets
     # The String Catalog for every screen lives here rather than in the
     # Features package — see Packages/Features/Package.swift for why.
     settings:
@@ -55,6 +75,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         ENABLE_PREVIEWS: true
         DEVELOPMENT_ASSET_PATHS: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # RevenueCat public SDK key. Empty here on purpose — keys are not
         # committed. Provide it locally via Config/Secrets.xcconfig (gitignored)
         # or as a CI secret. While it's empty the app runs with purchasing off
@@ -88,13 +109,25 @@ targets:
         # app later.
 
 schemes:
+  # No test action: `PelvicApp` is a thin composition-root shell (CLAUDE.md
+  # section 3) with no test bundle of its own. Every unit test lives in a
+  # Swift package under Packages/*/Tests and is run directly against that
+  # package (see .github/workflows/ci.yml's `packages` and `ios-packages`
+  # jobs), not through this scheme.
   PelvicApp:
     build:
       targets:
         PelvicApp: all
     run:
       config: Debug
-    test:
-      config: Debug
+  # Everything unlocked, no paywall — for App Store review and demos.
+  # See the `Subscription Build` config above and
+  # Packages/Features/Sources/Features/Shared/SubscriptionBuildConfiguration.swift.
+  PelvicApp Subscription:
+    build:
       targets:
-        - PelvicApp
+        PelvicApp: all
+    run:
+      config: Subscription Build
+    archive:
+      config: Subscription Build

@@ -113,12 +113,13 @@ struct PaywallView: View {
             }
             .padding(SpacingToken.md)
             .frame(minHeight: SpacingToken.minTouchTarget)
-            .background(ColorToken.surface)
+            .background(isSelected ? ColorToken.accentSoft : ColorToken.surface)
             .overlay {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? ColorToken.accent : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? ColorToken.accent : ColorToken.cardBorder, lineWidth: isSelected ? 2 : 1)
             }
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .cardElevation()
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)

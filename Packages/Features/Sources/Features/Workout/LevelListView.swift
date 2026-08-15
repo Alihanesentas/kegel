@@ -38,7 +38,7 @@ public struct LevelListView: View {
 
     private var recommendation: some View {
         let level = model.recommendedLevel
-        return Card {
+        return Card(highlighted: true) {
             VStack(alignment: .leading, spacing: SpacingToken.sm) {
                 Text("levels.recommended")
                     .font(TypographyToken.caption)
@@ -76,6 +76,11 @@ public struct LevelListView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(ColorToken.surface)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(ColorToken.cardBorder, lineWidth: 1)
+            }
+            .cardElevation()
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)

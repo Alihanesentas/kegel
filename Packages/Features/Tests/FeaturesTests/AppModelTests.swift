@@ -1,7 +1,4 @@
-import Analytics
 import Core
-import Foundation
-import Notifications
 import Persistence
 import Purchases
 import Testing
@@ -10,156 +7,6 @@ import Testing
 // These cover the decision logic the screens depend on — access rules, the
 // paid-feature boundary, paywall timing and reminders — without needing a
 // rendered view.
-
-private final class InMemoryRepository<Item: Codable & Sendable>: Repository, @unchecked Sendable {
-    private var items: [Item] = []
-    init(_ items: [Item] = []) {
-        self.items = items
-    }
-
-    func loadAll() async throws -> [Item] {
-        items
-    }
-
-    func save(_ items: [Item]) async throws {
-        self.items = items
-    }
-}
-
-private final class InMemoryStore<Value: Codable & Sendable>: ValueStore, @unchecked Sendable {
-    private var value: Value
-    init(_ value: Value) {
-        self.value = value
-    }
-
-    func load() async -> Value {
-        value
-    }
-
-    func save(_ value: Value) async throws {
-        self.value = value
-    }
-}
-
-private final class StubSubscription: SubscriptionProviding, @unchecked Sendable {
-    private let subscribed: Bool
-    private let plans: [SubscriptionPlan]
-    private(set) var configuredID: String?
-    private(set) var purchased: [String] = []
-
-    init(subscribed: Bool = false, plans: [SubscriptionPlan] = []) {
-        self.subscribed = subscribed
-        self.plans = plans
-    }
-
-    var isSubscribed: Bool {
-        get async { subscribed }
-    }
-
-    func configure(anonymousID: String) async {
-        configuredID = anonymousID
-    }
-
-    func availablePlans() async -> [SubscriptionPlan] {
-        plans
-    }
-
-    func purchase(_ plan: SubscriptionPlan) async throws {
-        purchased.append(plan.id)
-    }
-
-    func restorePurchases() async throws {}
-}
-
-private final class RecordingAnalytics: AnalyticsTracking, @unchecked Sendable {
-    private(set) var events: [AnalyticsEvent] = []
-    func track(_ event: AnalyticsEvent) {
-        events.append(event)
-    }
-}
-
-private final class RecordingNotifications: NotificationScheduling, @unchecked Sendable {
-    private(set) var scheduled: [DateComponents] = []
-    private(set) var cancelled: [String] = []
-    var authorized = true
-
-    func requestAuthorization() async throws -> Bool {
-        authorized
-    }
-
-    func scheduleDailyReminder(
-        at time: DateComponents, identifier _: String, title _: String, body _: String
-    ) async throws {
-        scheduled.append(time)
-    }
-
-    func cancelReminder(identifier: String) async {
-        cancelled.append(identifier)
-    }
-}
-
-private func makeGuide() -> MuscleGuide {
-    MuscleGuide(
-        title: LocalizedText(["en": "Guide"]),
-        intro: LocalizedText(["en": "Intro"]),
-        steps: [MuscleGuide.Step(id: 1, title: LocalizedText(["en": "S"]), body: LocalizedText(["en": "B"]))],
-        closing: LocalizedText(["en": "C"])
-    )
-}
-
-private func makeContent(freeLevelLimit: Int = 2, lockedFeatures: Set<PaidFeature> = []) -> ContentSchema {
-    ContentSchema(
-        schemaVersion: 3,
-        freeLevelLimit: freeLevelLimit,
-        weeklySessionGoal: 5,
-        levels: (1 ... 4).map { id in
-            Level(
-                id: id,
-                title: LocalizedText(["en": "Level \(id)"]),
-                subtitle: LocalizedText(["en": "S"]),
-                prepare: 5, contract: 2, hold: 0, relax: 2,
-                reps: 2, sets: 1, restBetweenSets: 0
-            )
-        },
-        muscleGuide: makeGuide(),
-        lockedFeatures: lockedFeatures
-    )
-}
-
-@MainActor
-private func makeModel(
-    history: [SessionRecord] = [],
-    preferences: UserPreferences = UserPreferences(),
-    subscription: StubSubscription = StubSubscription(),
-    content: ContentSchema = makeContent(),
-    analytics: RecordingAnalytics = RecordingAnalytics(),
-    notifications: RecordingNotifications = RecordingNotifications(),
-    contentRefresh: (@Sendable () async -> ContentSchema?)? = nil
-) async -> AppModel {
-    let model = AppModel(
-        content: content,
-        sessions: SessionStore(repository: InMemoryRepository(history)),
-        preferences: PreferencesStore(store: InMemoryStore(preferences)),
-        subscription: SubscriptionStore(provider: subscription),
-        feedback: NoOpFeedback(),
-        analytics: analytics,
-        notifications: notifications,
-        contentRefresh: contentRefresh
-    )
-    await model.load()
-    return model
-}
-
-private func record(levelID: Int, completed: Bool = true) -> SessionRecord {
-    SessionRecord(
-        date: Date(timeIntervalSince1970: 1_767_000_000),
-        levelID: levelID,
-        completedReps: 10,
-        plannedReps: 10,
-        duration: 120,
-        wasCompleted: completed
-    )
-}
 
 @MainActor
 struct LevelAccessTests {
@@ -268,7 +115,7 @@ struct SubscriptionWiringTests {
     @Test func plansAreLoadedFromTheProvider() async {
         let plans = [
             SubscriptionPlan(id: "yearly", period: .yearly, localizedPrice: "$39.99"),
-            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99"),
+            SubscriptionPlan(id: "monthly", period: .monthly, localizedPrice: "$4.99")
         ]
         let model = await makeModel(subscription: StubSubscription(plans: plans))
 
@@ -329,6 +176,35 @@ struct ReminderTests {
         #expect(notifications.scheduled.isEmpty)
         // The preference is still saved — permission can be granted later.
         #expect(model.preferences.preferences.reminderHour == 8)
+    }
+}
+
+@MainActor
+struct VibrationSettingTests {
+    /// Sessions carry no other feedback, so this is loaded and applied as
+    /// soon as the model is ready — not only when the user touches Settings.
+    @Test func vibrationPreferenceIsAppliedToFeedbackOnLaunch() async {
+        let feedback = RecordingFeedback()
+        _ = await makeModel(
+            preferences: UserPreferences(isVibrationEnabled: false),
+            feedback: feedback
+        )
+
+        #expect(feedback.vibrationEnabledCalls == [false])
+    }
+
+    @Test func togglingVibrationPersistsAndAppliesImmediately() async {
+        let feedback = RecordingFeedback()
+        let model = await makeModel(feedback: feedback)
+
+        await model.setVibrationEnabled(false)
+
+        #expect(!model.preferences.preferences.isVibrationEnabled)
+        #expect(feedback.vibrationEnabledCalls.last == false)
+
+        await model.setVibrationEnabled(true)
+        #expect(model.preferences.preferences.isVibrationEnabled)
+        #expect(feedback.vibrationEnabledCalls.last == true)
     }
 }
 

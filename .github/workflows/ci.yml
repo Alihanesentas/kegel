@@ -14,16 +14,17 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       # Platform-independent packages run straight through SwiftPM — much
       # faster than booting a simulator, and it keeps `Core` honest about not
-      # depending on UIKit.
+      # depending on UIKit. No Xcode pin here, to match ios-packages/app: the
+      # runner's default Xcode is what has simulator runtimes cached, and
+      # pinning just this job risks compiling Core under a different
+      # toolchain than the one ios-packages recompiles it under transitively.
       - name: Test platform-independent packages
         run: |
           set -e
-          for package in Core Persistence RemoteContent Notifications Purchases Analytics LiveSession Sync; do
+          for package in Core Persistence RemoteContent Notifications Purchases Analytics Feedback LiveSession Sync; do
             echo "::group::$package"
             (cd "Packages/$package" && swift test)
             echo "::endgroup::"
@@ -34,11 +35,10 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       # DesignSystem and Features build against the iOS SDK, so SwiftPM alone
       # can't test them — they go through xcodebuild against a simulator.
+      # Use the runner's default Xcode which has simulator runtimes cached.
       - name: Test iOS-only packages
         run: |
           set -eo pipefail
@@ -57,8 +57,6 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -67,7 +65,10 @@ jobs:
         run: xcodegen generate
 
       # Covers the iOS-only packages (DesignSystem, Features) too, since they
-      # can only be compiled against the iOS SDK.
+      # can only be compiled against the iOS SDK. No test step here: PelvicApp
+      # is a thin composition-root shell with no test bundle of its own — every
+      # unit test lives in a package and is already covered by the `packages`
+      # and `ios-packages` jobs above.
       - name: Build
         run: |
           set -o pipefail
@@ -76,21 +77,30 @@ jobs:
             -scheme PelvicApp \
             -destination "generic/platform=iOS Simulator"
 
-      - name: Test
-        run: |
-          set -o pipefail
-          xcodebuild test \
-            -project PelvicApp.xcodeproj \
-            -scheme PelvicApp \
-            -destination "platform=iOS Simulator,name=iPhone 16"
-
   format-lint:
     name: Format and lint
     runs-on: macos-15
+    env:
+      SWIFTFORMAT_VERSION: "0.62.1"
+      SWIFTLINT_VERSION: "0.65.0"
     steps:
       - uses: actions/checkout@v4
-      - name: Install SwiftFormat and SwiftLint
-        run: brew install swiftformat swiftlint
+      # `brew install` with no version constraint can silently pick up a newer
+      # formula release between CI runs, so lint results stop being reproducible.
+      # Both tools publish a portable, dependency-free binary as a release
+      # asset, so we pin an exact version by downloading it directly.
+      - name: Install SwiftFormat (pinned)
+        run: |
+          curl -sL -o swiftformat.zip \
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          unzip -o swiftformat.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftformat
+      - name: Install SwiftLint (pinned)
+        run: |
+          curl -sL -o swiftlint.zip \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -o swiftlint.zip swiftlint -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftlint
       - name: SwiftFormat check
         run: swiftformat --lint .
       - name: SwiftLint

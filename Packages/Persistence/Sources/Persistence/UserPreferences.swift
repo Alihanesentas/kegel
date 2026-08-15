@@ -14,6 +14,10 @@ public struct UserPreferences: Codable, Equatable, Sendable {
     /// Local time of day for the daily reminder; `nil` means reminders are off.
     public var reminderHour: Int?
     public var reminderMinute: Int?
+    /// Sessions are silent (no spoken phase names, no audio) — this only
+    /// controls whether phase changes fire a haptic. Defaults on since it's
+    /// the only feedback a session gives.
+    public var isVibrationEnabled: Bool
 
     public init(
         anonymousID: String = UUID().uuidString,
@@ -21,7 +25,8 @@ public struct UserPreferences: Codable, Equatable, Sendable {
         hasSeenPaywall: Bool = false,
         selectedLevelID: Int? = nil,
         reminderHour: Int? = nil,
-        reminderMinute: Int? = nil
+        reminderMinute: Int? = nil,
+        isVibrationEnabled: Bool = true
     ) {
         self.anonymousID = anonymousID
         self.hasCompletedOnboarding = hasCompletedOnboarding
@@ -29,6 +34,7 @@ public struct UserPreferences: Codable, Equatable, Sendable {
         self.selectedLevelID = selectedLevelID
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
+        self.isVibrationEnabled = isVibrationEnabled
     }
 
     public var reminderTime: DateComponents? {
