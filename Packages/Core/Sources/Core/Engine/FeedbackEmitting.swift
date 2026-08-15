@@ -1,6 +1,7 @@
 /// Haptic/audio output, injected so `Core` never imports a platform framework.
 /// The `Feedback` package provides the real implementation (CoreHaptics +
 /// AVSpeechSynthesizer); tests and previews use `NoOpFeedback`.
+@MainActor
 public protocol FeedbackEmitting: Sendable {
     /// Called once when a session starts, before the first step begins.
     func prepare()
@@ -14,6 +15,7 @@ public protocol FeedbackEmitting: Sendable {
     func setVibrationEnabled(_ enabled: Bool)
 }
 
+@MainActor
 public struct NoOpFeedback: FeedbackEmitting {
     public init() {}
     public func prepare() {}
