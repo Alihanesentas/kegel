@@ -109,16 +109,17 @@ targets:
         # app later.
 
 schemes:
+  # No test action: `PelvicApp` is a thin composition-root shell (CLAUDE.md
+  # section 3) with no test bundle of its own. Every unit test lives in a
+  # Swift package under Packages/*/Tests and is run directly against that
+  # package (see .github/workflows/ci.yml's `packages` and `ios-packages`
+  # jobs), not through this scheme.
   PelvicApp:
     build:
       targets:
         PelvicApp: all
     run:
       config: Debug
-    test:
-      config: Debug
-      targets:
-        - PelvicApp
   # Everything unlocked, no paywall — for App Store review and demos.
   # See the `Subscription Build` config above and
   # Packages/Features/Sources/Features/Shared/SubscriptionBuildConfiguration.swift.

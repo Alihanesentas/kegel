@@ -64,7 +64,10 @@ jobs:
         run: xcodegen generate
 
       # Covers the iOS-only packages (DesignSystem, Features) too, since they
-      # can only be compiled against the iOS SDK.
+      # can only be compiled against the iOS SDK. No test step here: PelvicApp
+      # is a thin composition-root shell with no test bundle of its own — every
+      # unit test lives in a package and is already covered by the `packages`
+      # and `ios-packages` jobs above.
       - name: Build
         run: |
           set -o pipefail
@@ -73,27 +76,30 @@ jobs:
             -scheme PelvicApp \
             -destination "generic/platform=iOS Simulator"
 
-      - name: Test
-        run: |
-          set -o pipefail
-          xcodebuild test \
-            -project PelvicApp.xcodeproj \
-            -scheme PelvicApp \
-            -destination "platform=iOS Simulator,name=iPhone 16"
-
   format-lint:
     name: Format and lint
     runs-on: macos-15
+    env:
+      SWIFTFORMAT_VERSION: "0.62.1"
+      SWIFTLINT_VERSION: "0.65.0"
     steps:
       - uses: actions/checkout@v4
-      - name: Install Swift linting tools
-        # Version pinning: download specific releases from GitHub to ensure consistent
-        # behavior across all CI runs. Unversioned `brew install` can pick different
-        # versions on different runner images, causing inconsistent results.
+      # `brew install` with no version constraint can silently pick up a newer
+      # formula release between CI runs, so lint results stop being reproducible.
+      # Both tools publish a portable, dependency-free binary as a release
+      # asset, so we pin an exact version by downloading it directly.
+      - name: Install SwiftFormat (pinned)
         run: |
-          # For now, install via brew; consider switching to GitHub releases if
-          # version inconsistencies reoccur.
-          brew install swiftformat swiftlint
+          curl -sL -o swiftformat.zip \
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          unzip -o swiftformat.zip -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftformat
+      - name: Install SwiftLint (pinned)
+        run: |
+          curl -sL -o swiftlint.zip \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -o swiftlint.zip swiftlint -d /usr/local/bin
+          chmod +x /usr/local/bin/swiftlint
       - name: SwiftFormat check
         run: swiftformat --lint .
       - name: SwiftLint

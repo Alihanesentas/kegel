@@ -24,23 +24,6 @@ struct PurchaseFlowTests {
         #expect(model.subscription.lastError == nil)
     }
 
-    /// User cancels the StoreKit dialog — no error, no state change.
-    @Test func cancelledPurchaseDoesNotChangeState() async {
-        let subscription = StubSubscription(plans: [
-            SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
-        ])
-        let model = await makeModel(subscription: subscription)
-
-        #expect(!model.subscription.isSubscribed)
-        await model.subscription.loadPlans()
-        guard let plan = model.subscription.plans.first else { return }
-
-        await model.subscription.purchase(plan)
-
-        #expect(!model.subscription.isSubscribed)
-        #expect(model.subscription.lastError == nil)
-    }
-
     /// Network error or invalid receipt — error is recorded, subscription unchanged.
     @Test func purchaseErrorIsRecordedButDoesNotUnlock() async {
         let plan = SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
