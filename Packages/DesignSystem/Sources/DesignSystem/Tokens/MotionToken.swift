@@ -40,7 +40,7 @@ private struct SlideOnChangeModifier<Value: Hashable>: ViewModifier {
 public extension View {
     /// Replaces this view with a sliding transition when `value` changes,
     /// falling back to a fade when Reduce Motion is on.
-    func slideOnChange<Value: Hashable>(_ value: Value, from edge: Edge) -> some View {
+    func slideOnChange(_ value: some Hashable, from edge: Edge) -> some View {
         modifier(SlideOnChangeModifier(value: value, edge: edge))
     }
 }
@@ -67,7 +67,7 @@ public extension View {
     /// A subtle scale + fade used when the workout phase changes. Reduce
     /// Motion never removes the transition outright (CLAUDE.md section 8) —
     /// it just stops moving and becomes a plain fade.
-    func phaseTransition<Value: Hashable>(_ value: Value) -> some View {
+    func phaseTransition(_ value: some Hashable) -> some View {
         modifier(PhaseTransitionModifier(value: value))
     }
 }

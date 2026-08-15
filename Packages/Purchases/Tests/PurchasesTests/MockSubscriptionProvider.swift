@@ -34,15 +34,15 @@ actor MockSubscriptionProvider: SubscriptionProviding {
         configuredAnonymousID = anonymousID
     }
 
-    func purchase(_ plan: SubscriptionPlan) async throws {
+    func purchase(_: SubscriptionPlan) async throws {
         switch scenario {
         case .success:
             isSubscribed = true
         case .userCancelled:
             throw SubscriptionError.cancelled
-        case .networkError(let message):
+        case let .networkError(message):
             throw SubscriptionError.failed(message)
-        case .invalidReceipt(let message):
+        case let .invalidReceipt(message):
             throw SubscriptionError.failed(message)
         }
     }
@@ -67,7 +67,7 @@ actor MockSubscriptionProvider: SubscriptionProviding {
                 "identifier": "pro",
                 "isActive": isSubscribed,
                 "expirationDate": Date().addingTimeInterval(86400 * 365).iso8601String,
-            ]
+            ],
         ]
     }
 

@@ -28,9 +28,9 @@ public enum SubscriptionBuildConfiguration {
     /// subscribed, everything unlocked".
     public static var isSubscriptionBuild: Bool {
         #if SUBSCRIPTION_BUILD
-        true
+            true
         #else
-        false
+            false
         #endif
     }
 

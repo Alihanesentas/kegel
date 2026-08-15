@@ -80,7 +80,9 @@ public final class AppModel {
     /// resolved entirely at compile time — see
     /// `SubscriptionBuildConfiguration.swift`.
     public func isUnlocked(levelID: Int) -> Bool {
-        if SubscriptionBuildConfiguration.isSubscriptionBuild { return true }
+        if SubscriptionBuildConfiguration.isSubscriptionBuild {
+            return true
+        }
         return content.isFree(levelID: levelID) || subscription.isSubscribed
     }
 
@@ -91,7 +93,9 @@ public final class AppModel {
     /// resolved entirely at compile time — see
     /// `SubscriptionBuildConfiguration.swift`.
     public func isUnlocked(_ feature: PaidFeature) -> Bool {
-        if SubscriptionBuildConfiguration.isSubscriptionBuild { return true }
+        if SubscriptionBuildConfiguration.isSubscriptionBuild {
+            return true
+        }
         return !content.requiresSubscription(feature) || subscription.isSubscribed
     }
 

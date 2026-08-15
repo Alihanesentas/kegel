@@ -26,7 +26,11 @@ public enum TypographyToken {
     /// Letter-spacing applied alongside `phaseLabel` via `.phaseLabelStyle()`.
     public static let phaseLabelTracking: CGFloat = 0.5
 
-    private static func roundedFont(baseSize: CGFloat, weight: UIFont.Weight, relativeTo style: UIFont.TextStyle) -> Font {
+    private static func roundedFont(
+        baseSize: CGFloat,
+        weight: UIFont.Weight,
+        relativeTo style: UIFont.TextStyle
+    ) -> Font {
         let systemFont = UIFont.systemFont(ofSize: baseSize, weight: weight)
         let descriptor = systemFont.fontDescriptor.withDesign(.rounded) ?? systemFont.fontDescriptor
         let roundedFont = UIFont(descriptor: descriptor, size: baseSize)
