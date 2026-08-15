@@ -37,7 +37,7 @@ final class InMemoryStore<Value: Codable & Sendable>: ValueStore, @unchecked Sen
 }
 
 final class StubSubscription: SubscriptionProviding, @unchecked Sendable {
-    private let subscribed: Bool
+    private var subscribed: Bool
     private let plans: [SubscriptionPlan]
     private(set) var configuredID: String?
     private(set) var purchased: [String] = []
@@ -72,6 +72,7 @@ final class StubSubscription: SubscriptionProviding, @unchecked Sendable {
             throw purchaseError ?? SubscriptionError.failed("Purchase failed")
         }
         purchased.append(plan.id)
+        subscribed = true
     }
 
     func restorePurchases() async throws {}
