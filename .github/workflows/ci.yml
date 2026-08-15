@@ -14,16 +14,17 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
 
       # Platform-independent packages run straight through SwiftPM — much
       # faster than booting a simulator, and it keeps `Core` honest about not
-      # depending on UIKit.
+      # depending on UIKit. No Xcode pin here, to match ios-packages/app: the
+      # runner's default Xcode is what has simulator runtimes cached, and
+      # pinning just this job risks compiling Core under a different
+      # toolchain than the one ios-packages recompiles it under transitively.
       - name: Test platform-independent packages
         run: |
           set -e
-          for package in Core Persistence RemoteContent Notifications Purchases Analytics LiveSession Sync; do
+          for package in Core Persistence RemoteContent Notifications Purchases Analytics Feedback LiveSession Sync; do
             echo "::group::$package"
             (cd "Packages/$package" && swift test)
             echo "::endgroup::"

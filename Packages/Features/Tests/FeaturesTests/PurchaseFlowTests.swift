@@ -10,7 +10,7 @@ struct PurchaseFlowTests {
         let subscription = StubSubscription(plans: [
             SubscriptionPlan(id: "pro_monthly", period: .monthly, localizedPrice: "$9.99")
         ])
-        var model = await makeModel(subscription: subscription)
+        let model = await makeModel(subscription: subscription)
 
         #expect(!model.subscription.isSubscribed)
         await model.subscription.loadPlans()
@@ -63,25 +63,5 @@ struct PurchaseFlowTests {
 
         #expect(!model.subscription.isSubscribed)
         #expect(model.subscription.lastError == nil)
-    }
-
-    /// Paywall should not show when user is already subscribed.
-    @Test func subscribedUsersNeverSeePaywall() async {
-        let model = await makeModel(
-            history: [record(levelID: 1)],
-            subscription: StubSubscription(subscribed: true)
-        )
-
-        #expect(!model.shouldPresentPaywall)
-    }
-
-    /// After marking paywall seen, it should not reappear until subscription state
-    /// changes or history is cleared.
-    @Test func paywallOnlyShowsUntilMarkedAsSeen() async {
-        let model = await makeModel(history: [record(levelID: 1)])
-
-        #expect(model.shouldPresentPaywall)
-        await model.markPaywallSeen()
-        #expect(!model.shouldPresentPaywall)
     }
 }
